@@ -1,0 +1,52 @@
+﻿=================================================================
+决竞球 BattleBall Unity版本 —— 团结引擎 1.6 LTS 快速启动指南
+=================================================================
+【重要】本项目已按 团结引擎(Tuanjie Engine) 1.6.12 LTS 配置。
+国际版 Unity 6000 / Unity 2022 也可以打开，但版本号会提示不匹配，
+点"Continue with xxxx"或"选择其他版本"即可，Package Manager会自动修正包版本。
+
+---------------------------------------
+第一步：安装团结引擎 1.6.12 LTS
+---------------------------------------
+1. 去 unity.cn → 团结引擎 → 引擎版本 → 找「团结引擎 1.6.12 LTS for HMI」那一行
+2. 点 "下载(Win)"，下独立安装包（约几个GB）
+3. 双击安装，默认下一步，安装路径建议 C:\\Program Files\\Tuanjie\\Editor\\1.6.12\\（不改也行）
+4. 首次启动时，会让你用手机号/微信登录 unity.cn 账号，登录个人版免费（年收入<20万美金可商用）
+
+---------------------------------------
+第二步：打开 BattleBall_Unity 项目
+---------------------------------------
+方式A（推荐）：
+   启动团结引擎 Editor → 主界面点「打开」→ 选择文件夹：E:\\项目储存\\BattleBall_Unity
+
+方式B（右键快捷）：
+   找到 E:\\项目储存\\BattleBall_Unity\\Assets 文件夹，在空白处按住 Alt 右键，
+   选「用团结引擎打开」（如果装编辑器时勾了右键关联）
+
+首次打开项目会很慢（5~20分钟），要做这些事：
+    - 生成 Library 文件夹（Shader/资源缓存）
+    - 解析 manifest.json 下载 URP/Input System 等包
+    - 导入 JSON、PNG 等 Assets
+    - 升级部分包版本（如果有不匹配，Package Manager 会自动处理）
+
+等待时注意：
+    ✘ 不要中途杀进程、断电（可能损坏Library，需删了重开）
+    ✔ 如果弹 "URP 渲染管线升级" / "使用新版输入系统"：点 YES / Apply / Restart
+    ✔ 如果弹 "TMP Essentials 资源导入"：点 Import TMP Essentials
+
+---------------------------------------
+第三步：首次打开后验证（能看到界面就算成功）
+---------------------------------------
+1. 顶部菜单栏 → File → New Scene → 选 Basic (URP) → 点 Create（可先不存）
+2. Project 窗口里定位到 Assets/_Project/Data/
+   → 应该能看到 8 个 JSON 文件：characters / growth_curves / foods / items /
+      skills / spirit_skills / spirits / spirits_elements / tags_registry
+3. Project 窗口 → Assets/_Project/Textures/UI/icons/items/
+   → 双击任意 PNG 看能否正常显示（能看到装备/食物图标）
+4. 顶部菜单栏 → Edit → Project Settings → Player → 右边 "Other Settings"
+   → 确认 Color Space = Linear；Graphics APIs = Direct3D 11（默认就是，不用改）
+5. 顶部菜单栏 → Edit → Project Settings → Graphics
+   → Scriptable Render Pipeline Settings 里拖入 URP Asset（如果没自动关联，等Phase 1处理）
+
+做完这几步，项目环境就准备好了，进入 Phase 1（资源导入）。
+详见同目录下 03-Phase1资源导入操作清单.md

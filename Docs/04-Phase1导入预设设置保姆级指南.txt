@@ -1,0 +1,192 @@
+﻿===============================================================================
+  BattleBall_Unity  Phase 1  导入预设设置保姆级指南
+  文件位置: E:\项目储存\BattleBall_Unity\Docs\04-Phase1导入预设设置保姆级指南.txt
+===============================================================================
+
+先做的事情
+1. Unity Hub 里打开 BattleBall_Unity 项目
+2. 等加载完（Console 不刷屏了），Project 窗口里应该能看到:
+   Assets/_Project/Models/Characters/   -> 8个球员FBX（player1~5高模 + player6/7/8_low低模）
+   Assets/_Project/Models/Environment/  -> battle_field_v2.glb + battleball.fbx + battleball.glb
+   Assets/_Project/Animations/Characters/Clips/  -> 10个动画FBX
+3. 看不到这些文件 -> 右键空白 -> Refresh 或按 Ctrl+R 刷新
+
+
+===============================================================================
+Part 1   8 个球员（player1~8）FBX 导入预设  - 每个都要设
+===============================================================================
+
+以 player1.fbx 为例，其他7个完全一样的设法。
+
+Step 1. 选中模型 + 打开 Model 选项卡
+Project 窗口点 Assets/_Project/Models/Characters/player1.fbx
+Inspector 里上方会有 4 个选项卡: Model | Rig | Animation | Materials
+先点 Model 选项卡，按下面设:
+
+  模型检查
+    Scale Factor:             1.0         <- 不要改
+    Use File Scale:           关 (off)
+    Mesh Compression:         Off
+    Read/Write Enabled:       开 (on)
+    Optimize Mesh:            开
+    Import BlendShapes:       关
+    Import Visibility:        关
+    Import Cameras:           关
+    Import Lights:            关
+    Preserve Hierarchy:       关
+
+  法线/切线
+    Normals:    Import
+    Tangents:   Import
+    (没有就选 Calculate)
+
+  几何
+    Keep Quads:  关
+    Weld Vertices: 开
+    Swap UVs:    关
+
+  Blend Shape Normals:  None
+
+
+Step 2. Rig 选项卡 - 关键！做 Humanoid Avatar
+Inspector 切到 Rig 选项卡:
+
+  Animation Type:     Humanoid        <- 默认 Generic，一定要改！
+  Avatar Definition:  Create From This Model
+
+  点 Rig 右下角 Configure 按钮 -> 弹 Avatar 窗口:
+    - 自动识别成功 -> 人体骨骼都有绿色勾 -> 点 Done
+    - 没识别到（Q版大头）-> 把左边骨骼节点拖到右边身体空位
+      (有报错时截图给我)
+    - 最后点 Apply 保存 Avatar
+
+
+Step 3. Materials 选项卡 - 解决白膜+PBR颜色失真
+Inspector 切到 Materials:
+
+  Import Materials:   开
+  Material Creation:  Standard
+  Material Naming:    By Model Name + (Material)
+
+  Location: Use Embedded Materials           <- 先选这个
+    如果白膜/发黑 -> 改为:
+  Location: Use External Materials (Legacy)
+  Name:     model name + (Material)
+  Remap:    Search and Remap
+
+  点 Apply。把 player1.fbx 拖到 Scene 看颜色:
+    - 正常 -> OK
+    - 发黑/发蓝 -> Part 2 做 PBR 修正
+
+
+Step 4. 点右下角 Apply（别漏！）
+
+
+===============================================================================
+Part 2   所有球员统一 PBR 修正（Metallic=1 颜色失真）
+===============================================================================
+
+方法 A（最快）:
+  1. Project 窗口进入 Assets/_Project/Models/Characters/player1.fbm/
+     （没有 fbm 就去 Assets/_Project/Materials/Characters/ 找 player1 材质）
+  2. 选中 .mat 材质 -> Inspector 打开
+  3. Shader 已是 Universal Render Pipeline/Lit（别改）
+  4. Surface Inputs 改参数:
+       Workflow Mode:   Metallic
+       Metallic:        0            <- 非金属
+       Smoothness:      0.4          <- 对应 Godot roughness=0.6
+       Base Map:        保留贴图（fbm里有texture_pbr就拖）
+       Normal Map:      fbm里有normal贴图就拖
+  5. Ctrl+S 保存。其他7个球员都一样。
+
+方法 B（白膜时用）:
+  1. 选中 player1.fbx -> Inspector Model 卡 -> 点 Extract Textures...
+  2. 保存到 Assets/_Project/Textures/Models/Characters/player1/
+  3. 回到 Material 把 Base Map 指过去，再 Metallic=0 Smoothness=0.4
+
+
+===============================================================================
+Part 3   10 个动画 FBX 设置
+===============================================================================
+
+每个动画 FBX 都按这个来（以 Baseball Pitching.fbx 为例）:
+
+  Model 选项卡:
+    Scale Factor: 1.0  其他默认
+
+  Rig 选项卡:
+    Animation Type:    Humanoid
+    Avatar Definition: Copy From Other Avatar
+    Source: 点右边小圆圈 -> 选 player1 的 Avatar -> 关联上
+
+  Animation 选项卡:
+    Import Animation:   开
+    Import Constraints: 关
+    Resample Curves:    开
+
+    Root Motion Node:  <None>   <- 我们不用Root Motion
+
+    Motion 三个 Bake Into Pose 都勾:
+      Root Transform Rotation:       Bake Into Pose  开
+      Root Transform Position (Y):   Bake Into Pose  开
+      Root Transform Position (XZ):  Bake Into Pose  开
+
+    Loop Time:
+      开（循环）: Idle / Standing Idle / Standing Block Idle / Dwarf Idle / Jog Forward
+      关（一次）: Baseball Pitching / Receiver Catch / Goalie Throw /
+                  Goalkeeper Catch / hy_luodi_p1
+    Loop Pose:  和 Loop Time 同步
+    Cycle Offset: 0
+
+  Apply。其他9个动画同样来一遍。
+
+
+===============================================================================
+Part 4   Environment - 球场 + 球
+===============================================================================
+
+4.1 battle_field_v2.glb（球场）
+  Model 选项卡:
+    Scale Factor: 1.0
+    Read/Write Enabled: 关
+    Generate Colliders: 开
+    Normals: Import   Tangents: Import
+    Swap Faces: 关（发黑/反面再勾）
+  Rig 选项卡:
+    Animation Type: None
+  Materials:
+    Use Embedded Materials -> Apply
+  Apply。拖到 Scene 里确认: 绿色草坪，尺寸约 1300x780 单位
+
+
+4.2 battleball.fbx（决竞球）
+  Model 选项卡:
+    Scale Factor: 1.0
+    Read/Write Enabled: 开
+    Generate Colliders: 开
+    Normals: Import   Tangents: Import
+  Rig 选项卡:
+    Animation Type: None
+  Materials:
+    Use Embedded Materials -> Apply
+  Apply。拖到场景里: 一个球，直径 0.5~0.8 单位合适
+
+
+===============================================================================
+Part 5  完成后核对清单（打勾后告诉我）
+===============================================================================
+
+[ ] 8 个球员都能拖到场景里显示，颜色正常（不白/不黑/不蓝）
+[ ] 8 个球员都生成了 Humanoid Avatar（Configure Done 过）
+[ ] 8 个球员材质 Metallic=0，Smoothness=0.4
+[ ] 10 个动画 Rig 都 Copy 同一个 Avatar，三个 Root Motion 都 Bake
+[ ] battle_field_v2.glb 拖进场景里是绿色球场，尺寸约 1300x780 单位
+[ ] battleball.fbx 拖进场景里是一个球，大小正常
+[ ] Console 没有 Model import failed / Material null 等红色错误
+
+
+===============================================================================
+遇到问题怎么办？
+  - Avatar Configure 识别不出骨骼（Q版大头）-> 截图 Configure 窗口
+  - 导入后还是白膜 -> 告诉我哪个球员
+  - 球场尺寸不对/反面黑/没碰撞 -> 直接说现象

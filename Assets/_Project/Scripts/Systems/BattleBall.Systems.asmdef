@@ -1,0 +1,16 @@
+﻿{
+  "name": "BattleBall.Systems",
+  "references": [
+    "BattleBall.Core",
+    "BattleBall.Battle"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

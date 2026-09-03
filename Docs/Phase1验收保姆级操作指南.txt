@@ -1,0 +1,114 @@
+﻿================================================
+决竞球 Unity 迁移 · Phase 1 验收 · 保姆级操作指南
+（主人：你直接用自动化脚本就行，这份是备份）
+================================================
+
+★ 推荐方案：顶部菜单点 BattleBall → Phase 1 一键验收 → 等弹窗告诉你结果
+
+====== 如果实在要手动验，按下面步骤（截图级点法） ======
+
+----------------------------------------------------------------
+【前提】Unity左下角是 Project 面板（Assets/_Project/...）。
+       右边是 Inspector 面板（选中资产后它的详细设置）。
+----------------------------------------------------------------
+
+================================================
+第 1 组：检查 8 个球员（player1~player8）
+================================================
+1. 左下角 Project 面板依次点：
+   Assets → 【_Project】 → 【Models】 → 【Characters】
+   （就是你截图时Project面板里能看到 player1.fbx 的那个文件夹）
+
+2. 单击选中【player1.fbx】，看右边 Inspector。Inspector顶部有3个选项卡：
+   🟦 Model（第一个选项卡）  检查这几个：
+   • Scale Factor          应该显示 1
+   • Read/Write            前面的正方形框应该 有勾✅
+   • Import Blend Shapes   没勾
+   • Import Cameras        没勾
+   • Import Lights         没勾
+   • Normals               下拉应显示 Import
+   • Tangents              下拉应显示 Calculate Legacy With Split Tangents（没tangent时自动算）
+
+   🟦 Rig（第二个选项卡）  检查这几个：
+   • Animation Type        下拉显示 Human（人形）
+   • Avatar Definition     显示 Create From This Model
+   • 如果Avatar那一行有绿色✓图标（✅Avatar Created）代表骨骼映射成功
+     如果是❌或警告：双击player1.fbx 进入 Configure，先点右下角"Mapping → Automap"，再点Done。
+
+   🟦 Materials（第三个选项卡，点击最上面那行 Materials 切换）：
+   • Location              下拉显示 Use External Materials (Legacy)
+   • 下面的材质列表里，任意双击一个材质球，会跳到新的 Inspector：
+       - Shader 显示：Universal Render Pipeline/Lit （或者Standard也行）
+       - Workflow Mode 显示 Metallic
+       - Metallic 滑块 约等于 0
+       - Smoothness 滑块 约等于 0.4
+
+3. 上面player1通过了，player2~player8 重复第2步。
+
+================================================
+第 2 组：检查 10 个动画Clip
+================================================
+1. 左下角 Project 面板依次点：
+   Assets → _Project → Animations → Characters → Clips
+
+2. 单击选中任意一个【Idle.fbx】，看右边Inspector：
+   🟦 Rig（第二个选项卡）  检查：
+   • Animation Type        Human
+   • Avatar Definition     显示 Copy From Other Avatar
+   • Source                能看到某个球员Avatar的名字（比如player1 Avatar），
+     不是空的。
+
+   🟦 Animation（第三个选项卡）：
+   • Import Animation      勾✅
+   • Bake IK               勾✅
+   • Resample Curves       勾✅
+   • Anim. Compression     下拉显示 Optimal
+   往下滚动，找到 Root Transform 三个部分：
+     【Root Transform Rotation】 → Bake into Pose 那一行的小勾必须 ✅
+     【Root Transform Position (Y)】 → Bake into Pose 那一行的小勾必须 ✅
+     【Root Transform Position (XZ)】 → Bake into Pose 那一行的小勾必须 ✅
+   再往下，Loop Time：
+     • Idle / Jog / Block Idle / Dwarf Idle 这些：Loop Time 小勾要 ✅
+     • Baseball Pitching / Catch / Throw 这些：Loop Time 不要勾
+
+3. 其他9个动画重复第2步（主要看Rig那的Copy Avatar+3个Bake开了没）。
+
+================================================
+第 3 组：球场 + 决竞球
+================================================
+1. 左下角 Project 面板依次点：
+   Assets → _Project → Models → Environment
+
+2. 选中【battle_field_v2.glb】，Inspector看：
+   🟦 Model 选项卡：
+   • Scale Factor = 1
+   • Generate Colliders 勾✅（墙/地面/球门才会有碰撞）
+   • Read/Write 没勾（静态资源省内存）
+   🟦 Rig 选项卡：Animation Type = None
+
+3. 选中【battleball.fbx】（或glb），Inspector看：
+   🟦 Model 选项卡：
+   • Scale Factor = 1
+   • Generate Colliders 勾✅（球才有碰撞体）
+   • Read/Write 勾✅
+   🟦 Rig 选项卡：Animation Type = None
+
+================================================
+手动验收通过后要做的 3 步（验证真的能用）：
+================================================
+① 拖 player1.fbx 到场景中间（就是场景3D视图那个空白网格上，松手）
+  → 场景出现一个小人，不是白膜/透明 → 颜色正常 ✅
+
+② 小人在Hierarchy里被选中时，右边Inspector有个Animator组件：
+   → Controller随便拖一个Animator Controller（没有的话先建空的也行），
+   → Avatar那栏不是None → 骨骼正常 ✅
+   → Project面板里找 Idle.fbx 下那个三角形展开的 Animation Clip（播放图标）
+     拖到Animator窗口的Entry箭头后连起来，点Unity上面▶Play按钮，
+     小人会做站立动作 → 动画正常 ✅
+
+③ 拖 battle_field_v2.glb 到场景 → 把player1放到球场中心旁边，
+   → 球场的绿/白/蓝颜色能看到，小人高度大概到球场挡板的一半 → 尺寸对 ✅
+
+================================================
+任何一步和指南不一样 → 把对应那一页Inspector截图发我，我改脚本自动修。
+================================================

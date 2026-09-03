@@ -1,0 +1,19 @@
+﻿{
+  "name": "BattleBall.Test",
+  "references": [
+    "BattleBall.Core",
+    "BattleBall.Battle",
+    "BattleBall.Systems"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
