@@ -27,10 +27,28 @@ namespace BattleBall.Battle
         public float launchDamage = 20f;
         public string attackerElement = "none";
         public List<Dictionary<string, object>> flightSkills = new List<Dictionary<string, object>>();
+        /// <summary>飞行自旋速度(rad/s)，对应GD ball_proxy_3d.gd BALL_SPIN_SPEED=12.0</summary>
+        public float spinSpeed = 12f;
+        /// <summary>球模型子节点(用于旋转视觉)。null=旋转自身transform</summary>
+        public Transform ballMesh;
 
         private HashSet<int> _hitPlayerIds = new HashSet<int>();
 
-        protected virtual void Awake() { }
+        protected virtual void Awake() {
+            // 确保有碰撞体和刚体(对应GD球物理检测)
+            var col = GetComponent<Collider>();
+            if (col == null) {
+                var sc = gameObject.AddComponent<SphereCollider>();
+                sc.isTrigger = true;
+                sc.radius = 0.3f;
+            }
+            var rb = GetComponent<Rigidbody>();
+            if (rb == null) {
+                rb = gameObject.AddComponent<Rigidbody>();
+                rb.isKinematic = true;
+                rb.useGravity = false;
+            }
+        }
 
         protected virtual void FixedUpdate()
         {
@@ -84,6 +102,9 @@ namespace BattleBall.Battle
             float step = ballSpeed * dt;
             transform.position += flightDir * step;
             flightTravelled += step;
+            // 飞行自旋(对应GD ball_proxy_3d.gd L160: ball_mesh_instance.rotate(Vector3.UP, BALL_SPIN_SPEED * delta))
+            var spinTarget = ballMesh != null ? ballMesh : transform;
+            spinTarget.Rotate(Vector3.up, spinSpeed * dt * Mathf.Rad2Deg, Space.Self);
             if (flightTravelled >= maxFlightDistance && !isTracking) { _OnBallStopped(); return; }
             _CheckBoundaries();
         }

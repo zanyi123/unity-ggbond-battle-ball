@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -16,6 +16,8 @@ namespace BattleBall.Battle
         public bool isAiming = false;
         public float aimCharge = 0f; // 0..1
         public float maxAimDistance = 8f; // 8m
+        /// <summary>瞬发模式: 左键按下直接发球(对应GD field_tag_test.gd)。false=蓄力模式(对应input_manager.gd)</summary>
+        public bool quickServe = true;
 
         public event Action<int> player_switch_requested; // index
         public event Action<Vector3, float> throw_requested; // direction, power(0..1)
@@ -98,22 +100,35 @@ namespace BattleBall.Battle
             Debug.Log("[Input] 切主控 -> " + controlledPlayer.name);
         }
 
-        // 原GD：_on_left_click_press
+        // 原GD：_on_left_click_press (quickServe=true对应GD field_tag_test.gd瞬发)
         protected virtual void _OnLeftDown() {
             if (controlledPlayer == null) return;
             if (controlledPlayer.IsStatusActive("disarmed")) return;
             if (controlledPlayer.HasBall()) {
-                isAiming = true; aimCharge = 0f;
+                if (quickServe) {
+                    // 瞬发模式: 左键按下直接发球(对应GD field_tag_test.gd _try_throw_ball)
+                    var dir = _GetAimDirection();
+                    var dist = _GetAimDistance();
+                    if (dist > 0.2f) {
+                        float power = Mathf.Clamp01(dist / maxAimDistance);
+                        if (power < 0.1f) power = 0.1f;
+                        throw_requested?.Invoke(dir, power);
+                    }
+                } else {
+                    // 蓄力模式: 按下进入瞄准(对应GD input_manager.gd)
+                    isAiming = true; aimCharge = 0f;
+                }
             } else {
                 // 无球：冲刺加速
                 controlledPlayer.isSprinting = true;
             }
         }
 
-        // 原GD：_on_left_click_release
+        // 原GD：_on_left_click_release (蓄力模式下松开发球)
         protected virtual void _OnLeftUp() {
             if (controlledPlayer == null) return;
             if (isAiming) {
+                // 蓄力模式: 松开发球
                 isAiming = false;
                 var dir = _GetAimDirection();
                 var dist = _GetAimDistance();
@@ -125,7 +140,11 @@ namespace BattleBall.Battle
                     throw_cancelled?.Invoke();
                 }
                 aimCharge = 0f;
+            } else if (!quickServe) {
+                // 蓄力模式下无球松开: 停止冲刺
+                controlledPlayer.isSprinting = false;
             } else {
+                // 瞬发模式下: 松开也停止冲刺
                 controlledPlayer.isSprinting = false;
             }
         }

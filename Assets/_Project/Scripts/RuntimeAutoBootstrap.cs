@@ -30,6 +30,13 @@ namespace BattleBall.Core
                 if (gm != null) gm.start_match();
                 _lastResult = "";
             }
+            if (Input.GetKeyDown(KeyCode.F3)) {
+                var im = InputManager.Instance;
+                if (im != null) {
+                    im.quickServe = !im.quickServe;
+                    Debug.Log("[Bootstrap] 发球模式切换 → " + (im.quickServe ? "瞬发(左键按下即飞)" : "蓄力(按住瞄准松手飞)"));
+                }
+            }
             if (Input.GetKeyDown(KeyCode.P)) {
                 var gm = GameManager.Instance;
                 if (gm != null) {
@@ -111,6 +118,9 @@ namespace BattleBall.Core
             }
             sb.Append("持球: ").Append(carrier).Append("\n");
             sb.Append("球 pos=").Append(ballPos.ToString("F1")).Append("  speed=").Append(ballSpeed.ToString("F2")).Append("m/s\n");
+            if (bc != null) {
+                sb.Append("球 旋转=").Append(bc.spinSpeed.ToString("F1")).Append("rad/s  飞行=").Append(bc.isFlying ? "YES" : "no").Append("\n");
+            }
             var allPC = Object.FindObjectsOfType<PlayerController>();
             sb.AppendLine("--- TeamA ---");
             foreach (var p in allPC.Where(x => x.team == "A").OrderBy(x => x.index)) {
@@ -130,9 +140,15 @@ namespace BattleBall.Core
             sb.Append("AI决策员: ").Append(ai != null ? ai.ai_players.Count.ToString() : "0");
             sb.Append("\n--- 控制说明 ---\n");
             sb.Append(" WASD 移动   1/2/3 切人   Tab 循环切\n");
-            sb.Append(" 左键(按住):持球=瞄准 / 无球=冲刺   左键松开: 投球\n");
+            // 发球模式显示
+            var im2 = InputManager.Instance;
+            if (im2 != null && im2.quickServe) {
+                sb.Append(" 左键: 持球=瞬发投球 / 无球=冲刺\n");
+            } else {
+                sb.Append(" 左键(按住):持球=瞄准 / 无球=冲刺   左键松开: 投球\n");
+            }
             sb.Append(" 右键按下: 接球姿态   4/5/6 技能   C 取消\n");
-            sb.Append(" F5 重开比赛   P 暂停/继续");
+            sb.Append(" F5 重开比赛   F3 切换发球模式   P 暂停/继续");
             if (!string.IsNullOrEmpty(_lastResult)) { sb.Append("\n--- ").Append(_lastResult).Append(" ---"); }
             return sb.ToString();
         }
