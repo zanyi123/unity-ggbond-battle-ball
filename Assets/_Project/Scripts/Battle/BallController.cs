@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -48,9 +48,28 @@ namespace BattleBall.Battle
                 rb.isKinematic = true;
                 rb.useGravity = false;
             }
-            // 确保球模型可见
-            var renderers = GetComponentsInChildren<Renderer>(true);
-            foreach (var r in renderers) r.enabled = true;
+            // 确保球模型可见: 没有MeshRenderer时动态创建球体视觉模型
+            var mr = GetComponentInChildren<MeshRenderer>();
+            if (mr == null) {
+                var meshObj = new GameObject("BallMesh");
+                meshObj.transform.SetParent(transform, false);
+                meshObj.transform.localPosition = Vector3.zero;
+                meshObj.transform.localScale = Vector3.one * 0.3f; // 半径0.3m
+                var mf = meshObj.AddComponent<MeshFilter>();
+                mf.sharedMesh = Resources.GetBuiltinResource<Mesh>("Sphere.fbx");
+                var mshR = meshObj.AddComponent<MeshRenderer>();
+                // 决竞球颜色: 橙红色
+                var mat = new Material(Shader.Find("Standard"));
+                mat.color = new Color(1f, 0.45f, 0.1f);
+                mshR.sharedMaterial = mat;
+                ballMesh = meshObj.transform;
+                Debug.Log("[Ball] 动态创建球体视觉模型");
+            } else {
+                // 确保已有渲染器可见
+                var renderers = GetComponentsInChildren<Renderer>(true);
+                foreach (var r in renderers) r.enabled = true;
+                if (ballMesh == null) ballMesh = mr.transform;
+            }
         }
 
         protected virtual void FixedUpdate()

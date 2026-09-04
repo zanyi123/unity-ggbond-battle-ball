@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using BattleBall.Battle;
@@ -161,17 +161,30 @@ namespace BattleBall.Core
                 sb.Append("\n");
             }
             sb.Append("AI决策员: ").Append(ai != null ? ai.ai_players.Count.ToString() : "0");
-            sb.Append("\n--- 控制说明 ---\n");
-            sb.Append(" WASD 移动   1/2/3 切人   Tab 循环切\n");
-            // 发球模式显示
+            sb.Append("\n========== 测试按键菜单 ==========\n");
+            sb.Append(" 【球员控制】\n");
+            sb.Append("   WASD     移动\n");
+            sb.Append("   Shift    冲刺(移动时)\n");
+            sb.Append("   1/2/3    切换主控球员\n");
+            sb.Append("   Tab      循环切换主控\n");
+            sb.Append(" 【球操作】\n");
             var im2 = InputManager.Instance;
             if (im2 != null && im2.quickServe) {
-                sb.Append(" 左键: 持球=瞬发投球 / 无球=冲刺\n");
+                sb.Append("   左键     持球=瞬发投球 / 无球=冲刺\n");
             } else {
-                sb.Append(" 左键(按住):持球=瞄准 / 无球=冲刺   左键松开: 投球\n");
+                sb.Append("   左键(按住) 持球=瞄准蓄力, 松开=投球\n");
+                sb.Append("   左键     无球=冲刺\n");
             }
-            sb.Append(" 右键按下: 接球姿态   4/5/6 技能   C 取消\n");
-            sb.Append(" F5 重开比赛   F3 切换发球模式   F4 隐藏/显示面板   P 暂停/继续");
+            sb.Append("   右键     接球姿态(按下进入/松开退出)\n");
+            sb.Append(" 【技能】\n");
+            sb.Append("   4/5/6    释放技能1/2/3\n");
+            sb.Append("   C        取消技能/取消瞄准\n");
+            sb.Append(" 【比赛控制】\n");
+            sb.Append("   F3       切换发球模式(瞬发/蓄力)\n");
+            sb.Append("   F4       隐藏/显示此面板\n");
+            sb.Append("   F5       重开比赛\n");
+            sb.Append("   P        暂停/继续\n");
+            sb.Append("====================================");
             if (!string.IsNullOrEmpty(_lastResult)) { sb.Append("\n--- ").Append(_lastResult).Append(" ---"); }
             return sb.ToString();
         }
