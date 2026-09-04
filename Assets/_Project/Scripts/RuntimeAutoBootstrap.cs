@@ -11,6 +11,7 @@ namespace BattleBall.Core
     {
         public bool verboseLog = true;
         public float statusRefresh = 0.25f;
+        public bool showPanel = true;
         string _hud = ""; float _nextRefresh = 0f; string _lastResult = ""; GUIStyle _boxStyle; bool _stylesInit = false;
 
         protected virtual void Awake() {
@@ -25,10 +26,12 @@ namespace BattleBall.Core
             if (im != null && bm != null) im.AttachBattleManager(bm);
         }
         protected virtual void Update() {
+            if (Input.GetKeyDown(KeyCode.F4)) { showPanel = !showPanel; }
             if (Input.GetKeyDown(KeyCode.F5)) {
                 var gm = GameManager.Instance;
                 if (gm != null) gm.start_match();
                 _lastResult = "";
+                _EnsureBallAssigned();
             }
             if (Input.GetKeyDown(KeyCode.F3)) {
                 var im = InputManager.Instance;
@@ -39,11 +42,19 @@ namespace BattleBall.Core
             }
             if (Input.GetKeyDown(KeyCode.P)) {
                 var gm = GameManager.Instance;
-                if (gm != null) {
-                    gm.is_paused = !gm.is_paused;
-                    /* 触发事件需在 GameManager 内部 */
+                if (gm != null) { gm.is_paused = !gm.is_paused; }
+            }
+            // 安全网: 主控球员未绑定时重绑
+            var im2 = InputManager.Instance;
+            if (im2 != null && im2.controlledPlayer == null) {
+                var gm2 = GameManager.Instance;
+                if (gm2 != null && gm2.team_a != null && gm2.team_a.Count > 0) {
+                    var pc = gm2.team_a[0].GetComponent<PlayerController>();
+                    if (pc != null) { im2.controlledPlayer = pc; Debug.Log("[Bootstrap] 重绑主控球员: " + pc.name); }
                 }
             }
+            // 安全网: 比赛进行中但球无主人时分配球权
+            _EnsureBallAssigned();
         }
 
         void DoBindings() {
@@ -76,6 +87,17 @@ namespace BattleBall.Core
                 ta.Count, tb.Count, ball != null ? ball.name : "null",
                 im != null && im.controlledPlayer != null ? im.controlledPlayer.name : "null"));
         }
+        void _EnsureBallAssigned() {
+            var gm = GameManager.Instance;
+            if (gm == null || gm.match_phase == MatchPhase.PREP) return;
+            var bc = Object.FindObjectOfType<BallController>();
+            if (bc == null || bc.owner != null || bc.isFlying) return;
+            var bm = BattleManager.Instance;
+            if (bm == null) return;
+            bm.AssignInitialBall();
+            Debug.Log("[Bootstrap] 球权已分配");
+        }
+
         static int NumInName(string s) {
             string n = ""; foreach (char c in s) if (char.IsDigit(c)) n += c;
             return n.Length == 0 ? 999 : int.Parse(n);
@@ -85,6 +107,7 @@ namespace BattleBall.Core
         }
 
         protected virtual void OnGUI() {
+            if (!showPanel) return;
             if (!_stylesInit) {
                 _boxStyle = new GUIStyle(GUI.skin.box) { alignment = TextAnchor.UpperLeft, wordWrap = true, fontSize = 13 };
                 _stylesInit = true;
@@ -148,7 +171,7 @@ namespace BattleBall.Core
                 sb.Append(" 左键(按住):持球=瞄准 / 无球=冲刺   左键松开: 投球\n");
             }
             sb.Append(" 右键按下: 接球姿态   4/5/6 技能   C 取消\n");
-            sb.Append(" F5 重开比赛   F3 切换发球模式   P 暂停/继续");
+            sb.Append(" F5 重开比赛   F3 切换发球模式   F4 隐藏/显示面板   P 暂停/继续");
             if (!string.IsNullOrEmpty(_lastResult)) { sb.Append("\n--- ").Append(_lastResult).Append(" ---"); }
             return sb.ToString();
         }

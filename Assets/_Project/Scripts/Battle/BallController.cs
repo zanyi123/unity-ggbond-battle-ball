@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -48,6 +48,9 @@ namespace BattleBall.Battle
                 rb.isKinematic = true;
                 rb.useGravity = false;
             }
+            // 确保球模型可见
+            var renderers = GetComponentsInChildren<Renderer>(true);
+            foreach (var r in renderers) r.enabled = true;
         }
 
         protected virtual void FixedUpdate()

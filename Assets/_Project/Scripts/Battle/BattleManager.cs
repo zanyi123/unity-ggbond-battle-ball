@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,6 +116,7 @@ namespace BattleBall.Battle
             Debug.Log("[BM] Kickoff! state=Half1");
         }
 
+        public void AssignInitialBall() { _assign_initial_ball(); }
         void _assign_initial_ball() {
             if (ballNode == null) { Debug.LogWarning("[BM] ballNode 为空,无法分配球权"); return; }
             var bc = ballNode.GetComponent<BallController>();
