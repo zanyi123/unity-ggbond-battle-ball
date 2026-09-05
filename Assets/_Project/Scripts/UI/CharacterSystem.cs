@@ -74,6 +74,7 @@ namespace BattleBall.UI
 
         private List<Dictionary<string, object>> _charactersData = new List<Dictionary<string, object>>();
         private int _selectedIndex = 0;
+        private Font _defaultFont;
 
         // 属性键数组（添加新属性时只需修改这里）
         private static readonly string[] StatKeys = { "stamina", "defense", "speed", "attack", "resilience", "defense_factor", "ball_speed" };
@@ -94,6 +95,7 @@ namespace BattleBall.UI
 
         void Start()
         {
+            _defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _rect = GetComponent<RectTransform>();
             if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
             SetFullRect(_rect);
@@ -110,6 +112,7 @@ namespace BattleBall.UI
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
+            rt.pivot = new Vector2(0f, 1f);
         }
 
         private void LoadData()
@@ -441,7 +444,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(pos.x, -pos.y);
             rt.sizeDelta = size;
             go.GetComponent<Image>().color = color;
             return go;
@@ -452,10 +458,14 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(pos.x, -pos.y);
             rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
+            lbl.font = _defaultFont;
             lbl.fontSize = fontSize;
             lbl.color = color;
             lbl.alignment = TextAnchor.MiddleCenter;
@@ -469,7 +479,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(pos.x, -pos.y);
             rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
@@ -483,6 +496,7 @@ namespace BattleBall.UI
             var lbl = txtGo.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
+            lbl.font = _defaultFont;
             lbl.color = color;
             lbl.alignment = TextAnchor.MiddleCenter;
             lbl.horizontalOverflow = HorizontalWrapMode.Overflow;

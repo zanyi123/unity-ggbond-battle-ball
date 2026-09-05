@@ -41,9 +41,12 @@ namespace BattleBall.UI
 
         public event System.Action ResultConfirmed;
         private RectTransform _rect;
+        private Font _defaultFont;
+
 
         void Start()
         {
+            _defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _rect = GetComponent<RectTransform>();
             if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
             // 全屏覆盖
@@ -547,6 +550,7 @@ namespace BattleBall.UI
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
+            rt.pivot = new Vector2(0f, 1f);
         }
 
         private GameObject NewScrollView(string name, Transform parent)
@@ -585,10 +589,14 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(pos.x, -pos.y);
             rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
+            lbl.font = _defaultFont;
             lbl.fontSize = fontSize;
             lbl.color = color;
             lbl.alignment = TextAnchor.MiddleCenter;
@@ -602,7 +610,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(pos.x, -pos.y);
             rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
@@ -616,6 +627,7 @@ namespace BattleBall.UI
             var lbl = txtGo.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
+            lbl.font = _defaultFont;
             lbl.color = color;
             lbl.alignment = TextAnchor.MiddleCenter;
             lbl.horizontalOverflow = HorizontalWrapMode.Overflow;
