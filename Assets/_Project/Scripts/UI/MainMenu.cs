@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -36,6 +36,22 @@ namespace BattleBall.UI
                 var es = new GameObject("EventSystem");
                 es.AddComponent<UnityEngine.EventSystems.EventSystem>();
                 es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
+            // 确保有 Canvas（UGUI 渲染必须）
+            var canvas = GetComponent<Canvas>();
+            if (canvas == null) {
+                canvas = gameObject.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 100;
+            }
+            if (GetComponent<UnityEngine.UI.CanvasScaler>() == null) {
+                var scaler = gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+                scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1440, 900);
+                scaler.matchWidthOrHeight = 0.5f;
+            }
+            if (GetComponent<UnityEngine.UI.GraphicRaycaster>() == null) {
+                gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
             }
             _rect = GetComponent<RectTransform>();
             if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
