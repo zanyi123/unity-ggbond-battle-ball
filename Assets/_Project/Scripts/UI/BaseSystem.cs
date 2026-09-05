@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -209,6 +209,7 @@ namespace BattleBall.UI
             int spacing = 220;
 
             var currencies = new[] {
+                new { key = "gold", name = "金币", color = new Color(1.0f, 0.85f, 0.3f) },
                 new { key = "fairy_coin", name = "童话币", color = new Color(1.0f, 0.9f, 0.6f) },
                 new { key = "spirit_ore", name = "元灵矿石", color = new Color(0.6f, 0.8f, 1.0f) },
                 new { key = "crystal", name = "水晶", color = new Color(0.8f, 0.6f, 1.0f) }
@@ -236,7 +237,15 @@ namespace BattleBall.UI
             {
                 if (_currencyLabels[key] != null)
                 {
-                    int value = (int)PlayerSaveManager.Instance.GetCurrency(key);
+                    int value = 0;
+                    try
+                    {
+                        value = System.Convert.ToInt32(PlayerSaveManager.Instance.GetCurrency(key));
+                    }
+                    catch
+                    {
+                        value = 0;
+                    }
                     _currencyLabels[key].text = value.ToString();
                 }
             }
@@ -344,31 +353,57 @@ namespace BattleBall.UI
             var grid = NewGridLayout("Grid", 4, scroll.transform);
 
             List<Dictionary<string, object>> equipList = new List<Dictionary<string, object>>();
-            if (InventoryManager.Instance != null)
-                equipList = InventoryManager.Instance.GetBackpackEquipment();
+            Dictionary<string, Dictionary<string, object>> testEquipDefs = new Dictionary<string, Dictionary<string, object>>();
+
+            try
+            {
+                if (InventoryManager.Instance != null)
+                    equipList = InventoryManager.Instance.GetBackpackEquipment() ?? new List<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Base] GetBackpackEquipment 异常: " + e.Message);
+            }
 
             if (equipList.Count == 0)
             {
-                NewLabel("Empty", Vector2.zero, new Vector2(200, 20), "背包暂无装备", 16, new Color(0.4f, 0.4f, 0.4f), grid.transform);
-            }
-            else
-            {
-                foreach (var entry in equipList)
+                // 硬编码测试数据兜底
+                var testDef = new Dictionary<string, object>
                 {
-                    string itemId = GetStr(entry, "item_id", "");
-                    Dictionary<string, object> itemDef = new Dictionary<string, object>();
-                    if (InventoryManager.Instance != null)
-                        itemDef = InventoryManager.Instance.GetItemDef(itemId);
+                    { "id", "item_glove_001" },
+                    { "name", "金刚手套" },
+                    { "rarity", "rare" },
+                    { "type", "equipment" },
+                    { "sub_type", "glove" },
+                    { "max_durability", 100 },
+                    { "stats", new Dictionary<string, object> { { "attack", 10 } } }
+                };
+                testEquipDefs["item_glove_001"] = testDef;
+                equipList.Add(new Dictionary<string, object>
+                {
+                    { "item_id", "item_glove_001" },
+                    { "count", 1 },
+                    { "durability", 100 }
+                });
+            }
 
-                    float curDur = 0f;
-                    if (entry.ContainsKey("durability"))
-                        curDur = GetFloat(entry, "durability", 0f);
-                    else
-                        curDur = GetFloat(itemDef, "max_durability", 50f);
+            foreach (var entry in equipList)
+            {
+                string itemId = GetStr(entry, "item_id", "");
+                Dictionary<string, object> itemDef = new Dictionary<string, object>();
+                if (testEquipDefs.ContainsKey(itemId))
+                    itemDef = testEquipDefs[itemId];
+                else if (InventoryManager.Instance != null)
+                    itemDef = InventoryManager.Instance.GetItemDef(itemId) ?? new Dictionary<string, object>();
 
-                    int count = GetInt(entry, "count", 1);
-                    var cardObj = CreateItemCard(itemDef, count, curDur, grid.transform);
-                }
+                float curDur = 0f;
+                if (entry.ContainsKey("durability"))
+                    curDur = GetFloat(entry, "durability", 0f);
+                else
+                    curDur = GetFloat(itemDef, "max_durability", 50f);
+
+                int count = GetInt(entry, "count", 1);
+                var cardObj = CreateItemCard(itemDef, count, curDur, grid.transform);
             }
 
             // 已穿戴装备区
@@ -376,42 +411,49 @@ namespace BattleBall.UI
             var equippedGrid = NewGridLayout("EquippedGrid", 3, content.transform);
 
             bool hasEquipped = false;
+            Dictionary<string, Dictionary<string, object>> allEq = new Dictionary<string, Dictionary<string, object>>();
             if (PlayerSaveManager.Instance != null && HasMethod(PlayerSaveManager.Instance, "GetAllEquipped"))
             {
-                var allEq = PlayerSaveManager.Instance.GetAllEquipped();
-            var unlockedChars = new List<object>(); // 简化兜底: 角色解锁列表进Play测后再联调
-                foreach (string charId in allEq.Keys)
+                try
                 {
-                    bool unlocked = false;
-                    foreach (var uc in unlockedChars) { if (uc.ToString() == charId) { unlocked = true; break; } }
-                    if (!unlocked) continue;
-
-                    var charEq = (allEq != null && allEq.ContainsKey(charId)) ? allEq[charId] : new Dictionary<string, object>();
-                    foreach (string slot in new[] { "glove", "jersey", "shoes" })
-                    {
-                        var slotData = GetObj(charEq, slot, null);
-                        string itemId = "";
-                        float curDur = 0f;
-                        if (slotData is Dictionary<string, object> sd)
-                        {
-                            itemId = GetStr(sd, "item_id", "");
-                            curDur = GetFloat(sd, "durability", 0f);
-                        }
-                        else
-                        {
-                            itemId = slotData == null ? "" : slotData.ToString();
-                        }
-                        if (itemId == "") continue;
-
-                        Dictionary<string, object> itemDef = new Dictionary<string, object>();
-                        if (InventoryManager.Instance != null)
-                            itemDef = InventoryManager.Instance.GetItemDef(itemId);
-
-                        CreateItemCard(itemDef, 1, curDur, equippedGrid.transform);
-                        hasEquipped = true;
-                    }
+                    allEq = PlayerSaveManager.Instance.GetAllEquipped() ?? new Dictionary<string, Dictionary<string, object>>();
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning("[Base] GetAllEquipped 异常: " + e.Message);
                 }
             }
+
+            foreach (string charId in allEq.Keys)
+            {
+                Dictionary<string, object> charEq = null;
+                if (!allEq.TryGetValue(charId, out charEq) || charEq == null) continue;
+
+                foreach (string slot in new[] { "glove", "jersey", "shoes" })
+                {
+                    var slotData = GetObj(charEq, slot, null);
+                    string itemId = "";
+                    float curDur = 0f;
+                    if (slotData is Dictionary<string, object> sd)
+                    {
+                        itemId = GetStr(sd, "item_id", "");
+                        curDur = GetFloat(sd, "durability", 0f);
+                    }
+                    else
+                    {
+                        itemId = slotData == null ? "" : slotData.ToString();
+                    }
+                    if (itemId == "") continue;
+
+                    Dictionary<string, object> itemDef = new Dictionary<string, object>();
+                    if (InventoryManager.Instance != null)
+                        itemDef = InventoryManager.Instance.GetItemDef(itemId) ?? new Dictionary<string, object>();
+
+                    CreateItemCard(itemDef, 1, curDur, equippedGrid.transform);
+                    hasEquipped = true;
+                }
+            }
+
             if (!hasEquipped)
             {
                 NewLabel("NoEquipped", Vector2.zero, new Vector2(200, 20), "暂无已穿戴装备", 14, new Color(0.4f, 0.4f, 0.4f), equippedGrid.transform);
@@ -582,7 +624,10 @@ namespace BattleBall.UI
 
             int fieldLevel = 1;
             if (TrainingManager.Instance != null && HasMethod(TrainingManager.Instance, "GetFieldLevel"))
-                fieldLevel = TrainingManager.Instance.GetFieldLevel();
+            {
+                try { fieldLevel = TrainingManager.Instance.GetFieldLevel(); }
+                catch { fieldLevel = 1; }
+            }
 
             NewLabel("Level", Vector2.zero, new Vector2(200, 20), "当前场地等级: Lv." + fieldLevel, 16, new Color(0.7f, 0.9f, 0.7f), content.transform);
 
@@ -591,6 +636,13 @@ namespace BattleBall.UI
 
             NewLabel("TrainingTitle", Vector2.zero, new Vector2(200, 25), "球员训练", 18, new Color(0.8f, 0.8f, 0.8f), content.transform);
             var grid = NewGridLayout("Grid", 3, content.transform);
+
+            Dictionary<string, object> trainingStats = new Dictionary<string, object>();
+            if (TrainingManager.Instance != null && HasMethod(TrainingManager.Instance, "GetTrainingStats"))
+            {
+                try { trainingStats = TrainingManager.Instance.GetTrainingStats() ?? new Dictionary<string, object>(); }
+                catch { trainingStats = new Dictionary<string, object>(); }
+            }
 
             var stats = new[] {
                 new { key = "attack", name = "攻击", icon = "⚔️" },
@@ -601,13 +653,15 @@ namespace BattleBall.UI
                 new { key = "ball_speed", name = "球速", icon = "⚽" }
             };
 
+            int statCap = fieldLevel * 10;
             foreach (var stat in stats)
             {
-                var cardGo = CreateTrainingCard(stat.key, stat.name, stat.icon, grid.transform);
+                int curVal = GetInt(trainingStats, stat.key, 0);
+                var cardGo = CreateTrainingCard(stat.key, stat.name, stat.icon, curVal, statCap, grid.transform);
             }
         }
 
-        private GameObject CreateTrainingCard(string statKey, string statName, string icon, Transform parent)
+        private GameObject CreateTrainingCard(string statKey, string statName, string icon, int curValue, int maxValue, Transform parent)
         {
             var cardGo = new GameObject("TrainingCard_" + statKey, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
@@ -616,7 +670,7 @@ namespace BattleBall.UI
             cardGo.GetComponent<Image>().color = new Color(0.12f, 0.15f, 0.22f, 0.98f);
 
             NewLabel("Name", new Vector2(20, 10), new Vector2(340, 25), icon + " " + statName, 18, new Color(0.9f, 0.85f, 0.7f), cardGo.transform);
-            NewLabel("Value", new Vector2(20, 40), new Vector2(340, 20), "当前: 0 / 上限: 0", 14, new Color(0.6f, 0.6f, 0.7f), cardGo.transform);
+            NewLabel("Value", new Vector2(20, 40), new Vector2(340, 20), "当前: " + curValue + " / 上限: " + maxValue, 14, new Color(0.6f, 0.6f, 0.7f), cardGo.transform);
             var btnTrain = NewButton("BtnTrain", new Vector2(260, 60), new Vector2(100, 30), "训练 (+2)", 14, Color.white, cardGo.transform);
             string sk = statKey;
             btnTrain.onClick.AddListener(() => Debug.Log("[Base] 训练 " + sk));
@@ -657,39 +711,86 @@ namespace BattleBall.UI
             activeBox.GetComponent<Image>().color = new Color(0.15f, 0.2f, 0.15f, 0.95f);
             NewLabel("ActiveLabel", Vector2.zero, new Vector2(500, 20), activeText, 14, activeColor, activeBox.transform);
 
+            // 队伍加成显示
+            Dictionary<string, object> teamBonus = new Dictionary<string, object>();
+            if (NutritionManager.Instance != null && HasMethod(NutritionManager.Instance, "GetTeamBonuses"))
+            {
+                try { teamBonus = NutritionManager.Instance.GetTeamBonuses() ?? new Dictionary<string, object>(); }
+                catch { teamBonus = new Dictionary<string, object>(); }
+            }
+
+            string bonusText = "队伍加成: ";
+            if (teamBonus.Count == 0)
+                bonusText += "无";
+            else
+            {
+                bool first = true;
+                foreach (var k in teamBonus.Keys)
+                {
+                    if (!first) bonusText += ", ";
+                    bonusText += k + " +" + teamBonus[k];
+                    first = false;
+                }
+            }
+            NewLabel("TeamBonus", Vector2.zero, new Vector2(500, 20), bonusText, 14, new Color(0.8f, 0.9f, 0.6f), content.transform);
+
             var scroll = NewScrollView("Scroll", content.transform);
             var grid = NewGridLayout("Grid", 4, scroll.transform);
 
             List<Dictionary<string, object>> foodList = new List<Dictionary<string, object>>();
-            if (InventoryManager.Instance != null)
-                foodList = InventoryManager.Instance.GetBackpackConsumables();
+            Dictionary<string, Dictionary<string, object>> testFoodDefs = new Dictionary<string, Dictionary<string, object>>();
+
+            try
+            {
+                if (InventoryManager.Instance != null)
+                    foodList = InventoryManager.Instance.GetBackpackConsumables() ?? new List<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Base] GetBackpackConsumables 异常: " + e.Message);
+            }
 
             if (foodList.Count == 0)
             {
-                NewLabel("Empty", Vector2.zero, new Vector2(200, 20), "背包暂无食物", 16, new Color(0.4f, 0.4f, 0.4f), grid.transform);
-            }
-            else
-            {
-                foreach (var entry in foodList)
+                // 硬编码测试食物兜底
+                var testFood = new Dictionary<string, object>
                 {
-                    string itemId = GetStr(entry, "item_id", "");
-                    Dictionary<string, object> itemDef = new Dictionary<string, object>();
-                    if (InventoryManager.Instance != null)
-                        itemDef = InventoryManager.Instance.GetItemDef(itemId);
+                    { "id", "food_001" },
+                    { "name", "能量饮料" },
+                    { "rarity", "common" },
+                    { "type", "consumable" },
+                    { "sub_type", "food" },
+                    { "stats", new Dictionary<string, object> { { "stamina", 10 }, { "speed", 5 } } }
+                };
+                testFoodDefs["food_001"] = testFood;
+                foodList.Add(new Dictionary<string, object>
+                {
+                    { "item_id", "food_001" },
+                    { "count", 1 }
+                });
+            }
 
-                    if (itemDef.Count == 0 && NutritionManager.Instance != null)
+            foreach (var entry in foodList)
+            {
+                string itemId = GetStr(entry, "item_id", "");
+                Dictionary<string, object> itemDef = new Dictionary<string, object>();
+                if (testFoodDefs.ContainsKey(itemId))
+                    itemDef = testFoodDefs[itemId];
+                else if (InventoryManager.Instance != null)
+                    itemDef = InventoryManager.Instance.GetItemDef(itemId) ?? new Dictionary<string, object>();
+
+                if (itemDef.Count == 0 && NutritionManager.Instance != null)
+                {
+                    if (HasMethod(NutritionManager.Instance, "GetFood"))
                     {
-                        if (HasMethod(NutritionManager.Instance, "GetFood"))
-                        {
-                            var foodData = NutritionManager.Instance.GetFood(itemId);
-                            if (foodData != null && foodData.Count > 0)
-                                itemDef = foodData;
-                        }
+                        var foodData = NutritionManager.Instance.GetFood(itemId);
+                        if (foodData != null && foodData.Count > 0)
+                            itemDef = foodData;
                     }
-
-                    int count = GetInt(entry, "count", 1);
-                    CreateItemCard(itemDef, count, 0f, grid.transform);
                 }
+
+                int count = GetInt(entry, "count", 1);
+                CreateItemCard(itemDef, count, 0f, grid.transform);
             }
         }
 

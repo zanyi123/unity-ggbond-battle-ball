@@ -1,231 +1,317 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace BattleBall.Core
 {
+    /// <summary>
+    /// 全局数据管理器（单例）。
+    /// 使用 Newtonsoft.Json 从 Resources/data/ 加载所有 JSON 配置到内存。
+    /// </summary>
     public class DataManager : MonoBehaviour
     {
-        public List<Dictionary<string, object>> characters = new List<Dictionary<string, object>>();
-        public List<Dictionary<string, object>> spirits = new List<Dictionary<string, object>>();
-        public List<Dictionary<string, object>> skills = new List<Dictionary<string, object>>();
-        public List<Dictionary<string, object>> tags = new List<Dictionary<string, object>>();
-        public Dictionary<string, object> elements = new Dictionary<string, object>();
+        public static DataManager Instance { get; private set; }
+
+        // ============================================================
+        // 数据缓存（私有）
+        // ============================================================
+        private List<Dictionary<string, object>> _characters;
+        private List<Dictionary<string, object>> _spirits;
+        private List<Dictionary<string, object>> _skills;          // data/skills/skills.json
+        private List<Dictionary<string, object>> _items;
+        private List<Dictionary<string, object>> _foods;
+        private Dictionary<string, object> _growthCurves;
+        private Dictionary<string, object> _elements;
+        private List<Dictionary<string, object>> _tags;
+        private List<Dictionary<string, object>> _spiritSkills;    // data/spirits/skills.json（向后兼容）
+
+        // ============================================================
+        // 向后兼容字段（旧代码直接访问这些字段）
+        // ============================================================
+        public List<Dictionary<string, object>> characters { get { return _characters; } }
+        public List<Dictionary<string, object>> spirits { get { return _spirits; } }
+        public List<Dictionary<string, object>> skills { get { return _spiritSkills; } }
+        public List<Dictionary<string, object>> tags { get { return _tags; } }
+        public Dictionary<string, object> elements { get { return _elements; } }
 
         public event System.Action data_loaded;
 
-        public static DataManager Instance { get; private set; }
+        /// <summary>UI 兼容：元灵列表属性。</summary>
+        public List<Dictionary<string, object>> Spirits { get { return _spirits ?? new List<Dictionary<string, object>>(); } }
 
-        /// <summary>UI 兼容: 按ID获取角色配置</summary>
-        /// <summary>UI 兼容: 按ID获取角色配置</summary>
-        public virtual Dictionary<string, object> GetCharacterById(string id) {
-            if (characters == null) return new Dictionary<string, object>();
-            foreach (var c in characters) { if (c is Dictionary<string, object> cd && cd.ContainsKey("id") && cd["id"]?.ToString() == id) return cd; }
-            return new Dictionary<string, object>();
-        }
-
-        /// <summary>UI 兼容: 图鉴Spirits</summary>
-        public virtual List<Dictionary<string, object>> Spirits { get { return _spirits; } }
-        protected List<Dictionary<string, object>> _spirits = new List<Dictionary<string, object>>();
-
-        /// <summary>UI 兼容: 按ID获取技能定义</summary>
-        public virtual Dictionary<string, object> GetSkillById(string skillId) {
-            if (skills == null) return new Dictionary<string, object>();
-            foreach (var s in skills) { if (s is Dictionary<string, object> sd && sd.ContainsKey("id") && sd["id"]?.ToString() == skillId) return sd; }
-            return new Dictionary<string, object>();
-        }
-
-        protected virtual void Awake()
+        // ============================================================
+        // 生命周期
+        // ============================================================
+        private void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
             Instance = this;
+            LoadAllData();
         }
-        protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
 
-        public virtual void Start() { load_all_data(); }
-
-        public virtual void load_all_data()
+        private void OnDestroy()
         {
-            characters = _load_json_array("Data/characters/characters");
-            spirits = _load_spirits_array();
-            skills = _load_spirits_skills();
-            tags = _load_tags();
-            elements = _load_json_dict("Data/spirits/elements");
+            if (Instance == this) Instance = null;
+        }
+
+        /// <summary>加载全部 JSON 数据到内存。可重复调用以刷新。</summary>
+        public void LoadAllData()
+        {
+            _characters = LoadArray("data/characters/characters");
+            _spirits = LoadObjectArray("data/spirits/spirits", "spirits");
+            _skills = LoadArray("data/skills/skills");
+            _items = LoadObjectArray("data/items/items", "items");
+            _foods = LoadObjectArray("data/items/foods", "foods");
+            _growthCurves = LoadObject("data/characters/growth_curves");
+            _elements = LoadObject("data/spirits/elements");
+            _tags = LoadObjectArray("data/spirits/tags_registry", "tags");
+            _spiritSkills = LoadObjectArray("data/spirits/skills", "skills");
+
             data_loaded?.Invoke();
             Debug.Log(string.Format(
-                "[DataManager] 数据加载完成: {0} 角色, {1} 元灵, {2} 技能, {3} 标签",
-                characters.Count, spirits.Count, skills.Count, tags.Count));
+                "[DataManager] 数据加载完成: {0} 角色, {1} 元灵, {2} 技能(skills), " +
+                "{3} 元灵技能, {4} 道具, {5} 食物, {6} 标签",
+                _characters.Count, _spirits.Count, _skills.Count, _spiritSkills.Count,
+                _items.Count, _foods.Count, _tags.Count));
         }
 
-        public virtual void reload_all() { load_all_data(); }
-
-        // 实际加载 JSON: Resources.Load<TextAsset> + JObject.Parse
-        protected virtual object _load_json_raw(string path)
+        // ============================================================
+        // 公共 API（需求定义）
+        // ============================================================
+        public List<Dictionary<string, object>> GetAllCharacters()
         {
-            var ta = Resources.Load<TextAsset>(path);
-            if (ta == null)
-            {
-                Debug.LogWarning("[DataManager] 文件不存在: " + path);
-                return null;
-            }
-            try
-            {
-                var text = ta.text.Trim();
-                if (text.StartsWith("["))
-                    return JArray.Parse(text).ToObject<List<object>>();
-                else
-                    return JObject.Parse(text).ToObject<Dictionary<string, object>>();
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("[DataManager] JSON解析错误 " + path + ": " + e.Message);
-                return null;
-            }
+            return _characters ?? new List<Dictionary<string, object>>();
         }
 
-        protected virtual List<Dictionary<string, object>> _load_json_array(string path)
+        public Dictionary<string, object> GetCharacterById(string id)
         {
-            var result = _load_json_raw(path);
-            if (result is IList list)
-            {
-                var typed = new List<Dictionary<string, object>>();
-                foreach (var item in list)
-                {
-                    if (item is IDictionary<string, object> d)
-                        typed.Add(new Dictionary<string, object>(d));
-                    else if (item is JObject jo)
-                        typed.Add(jo.ToObject<Dictionary<string, object>>());
-                }
-                return typed;
-            }
-            return new List<Dictionary<string, object>>();
+            return FindById(_characters, id);
         }
 
-        protected virtual Dictionary<string, object> _load_json_dict(string path)
+        public List<Dictionary<string, object>> GetAllSpirits()
         {
-            var result = _load_json_raw(path);
-            if (result is IDictionary<string, object> d)
-                return new Dictionary<string, object>(d);
-            if (result is JObject jo)
-                return jo.ToObject<Dictionary<string, object>>();
-            return new Dictionary<string, object>();
+            return _spirits ?? new List<Dictionary<string, object>>();
         }
 
-        protected virtual List<Dictionary<string, object>> _load_spirits_array()
+        public Dictionary<string, object> GetSpiritById(string id)
         {
-            var result = _load_json_raw("Data/spirits/spirits");
-            if (result is IDictionary<string, object> d && d.TryGetValue("spirits", out var tObj) && tObj is IList list)
-            {
-                var typed = new List<Dictionary<string, object>>();
-                foreach (var item in list)
-                {
-                    if (item is IDictionary<string, object> dd) typed.Add(new Dictionary<string, object>(dd));
-                    else if (item is JObject jo) typed.Add(jo.ToObject<Dictionary<string, object>>());
-                }
-                return typed;
-            }
-            return new List<Dictionary<string, object>>();
+            return FindById(_spirits, id);
         }
 
-        protected virtual List<Dictionary<string, object>> _load_spirits_skills()
+        public List<Dictionary<string, object>> GetAllSkills()
         {
-            var result = _load_json_raw("Data/spirits/skills");
-            if (result is IDictionary<string, object> d && d.TryGetValue("skills", out var tObj) && tObj is IList list)
-            {
-                var typed = new List<Dictionary<string, object>>();
-                foreach (var item in list)
-                {
-                    if (item is IDictionary<string, object> dd) typed.Add(new Dictionary<string, object>(dd));
-                    else if (item is JObject jo) typed.Add(jo.ToObject<Dictionary<string, object>>());
-                }
-                return typed;
-            }
-            return new List<Dictionary<string, object>>();
+            return _skills ?? new List<Dictionary<string, object>>();
         }
 
-        protected virtual List<Dictionary<string, object>> _load_tags()
+        public Dictionary<string, object> GetSkillById(string id)
         {
-            var result = _load_json_raw("Data/spirits/tags_registry");
-            if (result is IDictionary<string, object> d && d.TryGetValue("tags", out var tObj) && tObj is IList list)
-            {
-                var typed = new List<Dictionary<string, object>>();
-                foreach (var item in list)
-                {
-                    if (item is IDictionary<string, object> dd) typed.Add(new Dictionary<string, object>(dd));
-                    else if (item is JObject jo) typed.Add(jo.ToObject<Dictionary<string, object>>());
-                }
-                return typed;
-            }
-            return new List<Dictionary<string, object>>();
+            // 优先在 skills.json 中查找，未命中再回退到元灵技能，兼容旧调用。
+            var found = FindById(_skills, id);
+            if (found.Count > 0) return found;
+            return FindById(_spiritSkills, id);
         }
 
-        // ===== 查询方法 =====
-        public virtual Dictionary<string, object> get_character_by_id(string char_id)
+        public List<Dictionary<string, object>> GetAllItems()
         {
-            foreach (var c in characters)
-                if (c.TryGetValue("id", out var v) && v != null && v.ToString() == char_id) return c;
-            return new Dictionary<string, object>();
+            return _items ?? new List<Dictionary<string, object>>();
         }
 
-        public virtual Dictionary<string, object> get_spirit_by_id(string spirit_id)
+        public Dictionary<string, object> GetItemById(string id)
         {
-            foreach (var s in spirits)
-                if (s.TryGetValue("id", out var v) && v != null && v.ToString() == spirit_id) return s;
-            return new Dictionary<string, object>();
+            return FindById(_items, id);
         }
 
-        public virtual List<Dictionary<string, object>> get_skills_for_spirit(string spirit_id)
+        public List<Dictionary<string, object>> GetAllFoods()
+        {
+            return _foods ?? new List<Dictionary<string, object>>();
+        }
+
+        public Dictionary<string, object> GetFoodById(string id)
+        {
+            return FindById(_foods, id);
+        }
+
+        // ============================================================
+        // 向后兼容方法
+        // ============================================================
+        public void load_all_data() { LoadAllData(); }
+        public void reload_all() { LoadAllData(); }
+
+        public Dictionary<string, object> get_character_by_id(string char_id) { return GetCharacterById(char_id); }
+        public Dictionary<string, object> get_spirit_by_id(string spirit_id) { return GetSpiritById(spirit_id); }
+
+        /// <summary>旧版技能查找：在元灵技能（spirits/skills.json）中查找。</summary>
+        public Dictionary<string, object> get_skill_by_id(string skill_id)
+        {
+            return FindById(_spiritSkills, skill_id);
+        }
+
+        public Dictionary<string, object> get_tag_by_id(string tag_id)
+        {
+            return FindById(_tags, tag_id);
+        }
+
+        public List<Dictionary<string, object>> get_skills_for_spirit(string spirit_id)
         {
             var result = new List<Dictionary<string, object>>();
-            foreach (var s in skills)
-                if (s.TryGetValue("spirit_id", out var v) && v != null && v.ToString() == spirit_id) result.Add(s);
+            if (_spiritSkills == null) return result;
+            foreach (var s in _spiritSkills)
+            {
+                if (s != null && s.TryGetValue("spirit_id", out var v) && v != null && v.ToString() == spirit_id)
+                    result.Add(s);
+            }
             return result;
         }
 
-        public virtual Dictionary<string, object> get_skill_by_id(string skill_id)
-        {
-            foreach (var s in skills)
-                if (s.TryGetValue("id", out var v) && v != null && v.ToString() == skill_id) return s;
-            return new Dictionary<string, object>();
-        }
-
-        public virtual Dictionary<string, object> get_tag_by_id(string tag_id)
-        {
-            foreach (var t in tags)
-                if (t.TryGetValue("id", out var v) && v != null && v.ToString() == tag_id) return t;
-            return new Dictionary<string, object>();
-        }
-
-        public virtual List<Dictionary<string, object>> get_skills_by_tag(string tag)
+        public List<Dictionary<string, object>> get_skills_by_tag(string tag)
         {
             var result = new List<Dictionary<string, object>>();
-            foreach (var s in skills)
-                if (s.TryGetValue("tag", out var v) && v != null && v.ToString() == tag) result.Add(s);
+            if (_spiritSkills == null) return result;
+            foreach (var s in _spiritSkills)
+            {
+                if (s != null && s.TryGetValue("tag", out var v) && v != null && v.ToString() == tag)
+                    result.Add(s);
+            }
             return result;
         }
 
-        public virtual float get_counter_multiplier(string attacker_element, string defender_element)
+        /// <summary>计算属性克制倍率。</summary>
+        public float get_counter_multiplier(string attacker_element, string defender_element)
         {
-            if (elements.Count == 0) return 1.0f;
-            if (elements.TryGetValue("counters", out var cObj) && cObj is IList counters)
+            if (_elements == null || _elements.Count == 0) return 1.0f;
+
+            float mult = 1.3f;
+            if (_elements.TryGetValue("counter_multiplier", out var mObj) && mObj != null)
             {
-                float mult = 1.3f;
-                if (elements.TryGetValue("counter_multiplier", out var mObj) && mObj != null)
-                    if (float.TryParse(mObj.ToString(), out var mv)) mult = mv;
-                foreach (var counter in counters)
+                if (float.TryParse(mObj.ToString(), out var mv)) mult = mv;
+            }
+
+            if (_elements.TryGetValue("counters", out var cObj) && cObj != null)
+            {
+                IEnumerable counters = null;
+                if (cObj is JArray ja) counters = ja;
+                else if (cObj is IList il) counters = il;
+
+                if (counters != null)
                 {
-                    if (counter is IDictionary<string, object> cd)
+                    foreach (var counter in counters)
                     {
-                        if (cd.TryGetValue("attacker", out var atk) && cd.TryGetValue("defender", out var def) &&
-                            atk != null && def != null &&
-                            atk.ToString() == attacker_element && def.ToString() == defender_element)
+                        string atk = null;
+                        string def = null;
+                        if (counter is JObject jo)
+                        {
+                            atk = jo["attacker"] != null ? jo["attacker"].ToString() : null;
+                            def = jo["defender"] != null ? jo["defender"].ToString() : null;
+                        }
+                        else if (counter is IDictionary<string, object> cd)
+                        {
+                            atk = cd.TryGetValue("attacker", out var a) ? a?.ToString() : null;
+                            def = cd.TryGetValue("defender", out var d) ? d?.ToString() : null;
+                        }
+                        if (atk != null && def != null && atk == attacker_element && def == defender_element)
                             return mult;
                     }
                 }
             }
             return 1.0f;
+        }
+
+        // ============================================================
+        // 私有加载辅助
+        // ============================================================
+        private string LoadText(string resourcePath)
+        {
+            var ta = Resources.Load<TextAsset>(resourcePath);
+            if (ta == null)
+            {
+                Debug.LogError("[DataManager] 资源不存在: " + resourcePath);
+                return null;
+            }
+            return ta.text;
+        }
+
+        /// <summary>加载根节点为数组的 JSON，转为 List&lt;Dictionary&lt;string, object&gt;&gt;。</summary>
+        private List<Dictionary<string, object>> LoadArray(string resourcePath)
+        {
+            var result = new List<Dictionary<string, object>>();
+            string text = LoadText(resourcePath);
+            if (text == null) return result;
+            try
+            {
+                var arr = JArray.Parse(text);
+                foreach (var item in arr)
+                {
+                    if (item is JObject jo)
+                        result.Add(jo.ToObject<Dictionary<string, object>>());
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[DataManager] JSON 解析错误 " + resourcePath + ": " + e.Message);
+            }
+            return result;
+        }
+
+        /// <summary>加载根节点为对象、内部含数组字段的 JSON，提取指定数组。</summary>
+        private List<Dictionary<string, object>> LoadObjectArray(string resourcePath, string arrayKey)
+        {
+            var result = new List<Dictionary<string, object>>();
+            string text = LoadText(resourcePath);
+            if (text == null) return result;
+            try
+            {
+                var obj = JObject.Parse(text);
+                var token = obj[arrayKey];
+                if (token is JArray arr)
+                {
+                    foreach (var item in arr)
+                    {
+                        if (item is JObject jo)
+                            result.Add(jo.ToObject<Dictionary<string, object>>());
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[DataManager] JSON 解析错误 " + resourcePath + ": " + e.Message);
+            }
+            return result;
+        }
+
+        /// <summary>加载根节点为对象的 JSON，转为 Dictionary&lt;string, object&gt;。</summary>
+        private Dictionary<string, object> LoadObject(string resourcePath)
+        {
+            var result = new Dictionary<string, object>();
+            string text = LoadText(resourcePath);
+            if (text == null) return result;
+            try
+            {
+                var obj = JObject.Parse(text);
+                result = obj.ToObject<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[DataManager] JSON 解析错误 " + resourcePath + ": " + e.Message);
+            }
+            return result;
+        }
+
+        /// <summary>在列表中按 id 字段查找，未找到返回空字典。</summary>
+        private Dictionary<string, object> FindById(List<Dictionary<string, object>> list, string id)
+        {
+            if (list == null || id == null) return new Dictionary<string, object>();
+            foreach (var item in list)
+            {
+                if (item != null && item.TryGetValue("id", out var v) && v != null && v.ToString() == id)
+                    return item;
+            }
+            return new Dictionary<string, object>();
         }
     }
 }

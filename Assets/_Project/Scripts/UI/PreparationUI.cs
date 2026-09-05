@@ -113,6 +113,10 @@ namespace BattleBall.UI
         // 元灵选择弹窗
         private int _spiritPopupPlayerIndex = -1;
         private GameObject _spiritPopup = null;
+
+        // 替补选择弹窗
+        private int _subPopupPlayerIndex = -1;
+        private GameObject _substitutePopup = null;
         private RectTransform _rect;
         private Font _defaultFont;
 
@@ -996,6 +1000,9 @@ namespace BattleBall.UI
             _foodStatusLabel = NewLabel("FoodStatus", new Vector2(1020, 790), new Vector2(270, 20), "", 12, new Color(0.6f, 0.6f, 0.6f), transform);
             _foodStatusLabel.alignment = TextAnchor.MiddleLeft;
 
+            // 初始化策略按钮高亮状态
+            UpdateStrategyButtonStyles();
+
             RefreshFoodList();
         }
 
@@ -1226,7 +1233,158 @@ namespace BattleBall.UI
         private void OnSubstitutePlayer(int index)
         {
             Debug.Log("[备战] 位置" + (index + 1) + "替补");
-            PlayerSubstituted?.Invoke(index, "");
+            OpenSubstitutePopup(index);
+        }
+
+        /// <summary>打开替补球员选择弹窗（用 DataManager.GetAllCharacters 真实数据）</summary>
+        private void OpenSubstitutePopup(int playerIndex)
+        {
+            CloseSubstitutePopup();
+            _subPopupPlayerIndex = playerIndex;
+
+            // 获取所有角色（真实数据，try-catch 兜底）
+            List<Dictionary<string, object>> characters = new List<Dictionary<string, object>>();
+            try
+            {
+                if (DataManager.Instance != null)
+                    characters = DataManager.Instance.GetAllCharacters() ?? new List<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[备战] GetAllCharacters 异常: " + e.Message);
+            }
+
+            // 数据为空时硬编码兜底
+            if (characters == null || characters.Count == 0)
+            {
+                Debug.LogWarning("[备战] 角色数据为空，使用硬编码兜底");
+                characters = new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object>
+                    {
+                        { "id", "char_001" }, { "name", "猪猪侠" }, { "element", "金刚" },
+                        { "stamina", 80.0 }, { "defense", 60.0 }, { "speed", 75.0 },
+                        { "attack", 38.0 }, { "resilience", 50.0 }
+                    },
+                    new Dictionary<string, object>
+                    {
+                        { "id", "char_002" }, { "name", "超人强" }, { "element", "雷火" },
+                        { "stamina", 90.0 }, { "defense", 85.0 }, { "speed", 60.0 },
+                        { "attack", 55.0 }, { "resilience", 70.0 }
+                    },
+                    new Dictionary<string, object>
+                    {
+                        { "id", "char_003" }, { "name", "菲菲" }, { "element", "冰雪" },
+                        { "stamina", 70.0 }, { "defense", 50.0 }, { "speed", 85.0 },
+                        { "attack", 45.0 }, { "resilience", 55.0 }
+                    }
+                };
+            }
+
+            var popup = new GameObject("SubstitutePopup", typeof(RectTransform), typeof(Image));
+            popup.GetComponent<RectTransform>().SetParent(transform, false);
+            SetFullRect(popup.GetComponent<RectTransform>());
+            popup.GetComponent<Image>().color = new Color(0, 0, 0, 0.6f);
+            var popupBtn = popup.AddComponent<Button>();
+            popupBtn.onClick.AddListener(CloseSubstitutePopup);
+            _substitutePopup = popup;
+
+            // 弹窗面板
+            float popupH = 120.0f + characters.Count * 90.0f + 60.0f;
+            var panelGo = new GameObject("Panel", typeof(RectTransform), typeof(Image));
+            var prt = panelGo.GetComponent<RectTransform>();
+            prt.SetParent(popup.transform, false);
+            prt.anchorMin = new Vector2(0.5f, 0.5f);
+            prt.anchorMax = new Vector2(0.5f, 0.5f);
+            prt.pivot = new Vector2(0.5f, 0.5f);
+            prt.anchoredPosition = Vector2.zero;
+            prt.sizeDelta = new Vector2(820, Mathf.Min(popupH + 30, 680));
+            panelGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
+
+            var title = NewLabel("Title", new Vector2(10, 10), new Vector2(400, 30),
+                "选择替补球员 - 位置 " + (playerIndex + 1), 20, Color.cyan, panelGo.transform);
+            title.alignment = TextAnchor.MiddleLeft;
+
+            // 滚动容器
+            var scroll = NewScrollView("Scroll", panelGo.transform);
+            var scrollRt = scroll.GetComponent<RectTransform>();
+            scrollRt.anchoredPosition = new Vector2(10, 45);
+            scrollRt.sizeDelta = new Vector2(800, Mathf.Min(popupH - 10, 580));
+
+            // 球员卡片列表
+            for (int i = 0; i < characters.Count; i++)
+            {
+                var c = characters[i];
+                string cId = GetStr(c, "id", "?");
+                string cName = GetStr(c, "name", "?");
+                string cElem = GetStr(c, "element", "?");
+                float cSpeed = GetFloat(c, "speed", 0f);
+                float cAtk = GetFloat(c, "attack", 0f);
+                float cDef = GetFloat(c, "defense", 0f);
+
+                var cardGo = new GameObject("CharCard_" + i, typeof(RectTransform), typeof(Image));
+                var crt = cardGo.GetComponent<RectTransform>();
+                crt.SetParent(scroll.GetComponent<ScrollRect>().content, false);
+                crt.sizeDelta = new Vector2(780, 80);
+                cardGo.GetComponent<Image>().color = new Color(0.12f, 0.15f, 0.22f, 0.98f);
+
+                var nameLbl = NewLabel("Name", new Vector2(15, 8), new Vector2(300, 22),
+                    cName + "  [" + cElem + "]", 17, Color.white, cardGo.transform);
+                nameLbl.alignment = TextAnchor.MiddleLeft;
+
+                var statsLbl = NewLabel("Stats", new Vector2(15, 36), new Vector2(500, 20),
+                    string.Format("速度:{0:F0}  攻击:{1:F0}  防御:{2:F0}", cSpeed, cAtk, cDef),
+                    13, new Color(0.7f, 0.8f, 1.0f), cardGo.transform);
+                statsLbl.alignment = TextAnchor.MiddleLeft;
+
+                var selBtn = NewButton("Select", new Vector2(680, 25), new Vector2(85, 32), "替换上场", 14, Color.white, cardGo.transform);
+                var cCopy = c;
+                selBtn.onClick.AddListener(() => OnSubstituteCharacterSelected(cCopy));
+            }
+
+            var closeBtn = NewButton("CloseBtn", new Vector2(370, Mathf.Min(popupH - 5, 600)),
+                new Vector2(80, 30), "关闭", 14, Color.white, panelGo.transform);
+            closeBtn.onClick.AddListener(CloseSubstitutePopup);
+        }
+
+        /// <summary>选择替补球员后，替换该位置球员</summary>
+        private void OnSubstituteCharacterSelected(Dictionary<string, object> charData)
+        {
+            int idx = _subPopupPlayerIndex;
+            string charId = GetStr(charData, "id", "");
+            if (idx < 0 || idx >= _teamAPlayers.Count)
+            {
+                CloseSubstitutePopup();
+                return;
+            }
+            var player = _teamAPlayers[idx];
+            if (player == null)
+            {
+                CloseSubstitutePopup();
+                return;
+            }
+            try
+            {
+                // 重新初始化该球员为新角色
+                player.Initialize(charId, player.team, player.isPlayerControlled);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[备战] 替换球员 Initialize 异常: " + e.Message);
+            }
+            UpdatePlayerWidget(idx, player);
+            UpdateEquipmentWidget(idx);
+            UpdateTrainingWidget(idx);
+            PlayerSubstituted?.Invoke(idx, charId);
+            Debug.Log("[备战] 位置" + (idx + 1) + " 替补为: " + GetStr(charData, "name", charId));
+            CloseSubstitutePopup();
+        }
+
+        private void CloseSubstitutePopup()
+        {
+            if (_substitutePopup != null) Destroy(_substitutePopup);
+            _substitutePopup = null;
+            _subPopupPlayerIndex = -1;
         }
 
         private void OnChangeSpirit(int index)
@@ -1240,10 +1398,38 @@ namespace BattleBall.UI
             CloseSpiritPopup();
             _spiritPopupPlayerIndex = playerIndex;
 
-            // 先加载元灵数据
+            // 先加载元灵数据（真实数据，try-catch 兜底）
             List<Dictionary<string, object>> spirits = new List<Dictionary<string, object>>();
-            if (DataManager.Instance != null)
-                spirits = DataManager.Instance.Spirits;
+            try
+            {
+                if (DataManager.Instance != null)
+                    spirits = DataManager.Instance.GetAllSpirits() ?? new List<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[备战] GetAllSpirits 异常: " + e.Message);
+            }
+
+            // 数据为空时硬编码兜底
+            if (spirits == null || spirits.Count == 0)
+            {
+                Debug.LogWarning("[备战] 元灵数据为空，使用硬编码兜底");
+                spirits = new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object>
+                    {
+                        { "id", "spirit_001" }, { "name", "金刚猿" }, { "element", "金刚" },
+                        { "description", "力量型元灵，提升攻击与防御" },
+                        { "skills", new List<object> { "skill_001", "skill_002" } }
+                    },
+                    new Dictionary<string, object>
+                    {
+                        { "id", "spirit_002" }, { "name", "雷火凤" }, { "element", "雷火" },
+                        { "description", "爆发型元灵，提升攻击与球速" },
+                        { "skills", new List<object> { "skill_003" } }
+                    }
+                };
+            }
 
             var popup = new GameObject("SpiritSelectPopup", typeof(RectTransform), typeof(Image));
             popup.GetComponent<RectTransform>().SetParent(transform, false);
@@ -1529,7 +1715,50 @@ namespace BattleBall.UI
         {
             Debug.Log("[备战] 开始比赛!");
             gameObject.SetActive(false);
-            MatchStartedFromPrep?.Invoke();
+
+            // 优先调用 BattleManager 真实开始比赛方法，失败则走事件回调
+            bool started = false;
+            try
+            {
+                if (BattleManager.Instance != null)
+                {
+                    // 反射兼容：如果存在 StartMatch 方法则调用
+                    var mi = typeof(BattleManager).GetMethod("StartMatch",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if (mi != null)
+                    {
+                        mi.Invoke(BattleManager.Instance, null);
+                        started = true;
+                        Debug.Log("[备战] 调用 BattleManager.StartMatch()");
+                    }
+                    else
+                    {
+                        // 没有 StartMatch 方法，调用真实存在的 OnPrepMatchStarted
+                        BattleManager.Instance.OnPrepMatchStarted();
+                        started = true;
+                        Debug.Log("[备战] 调用 BattleManager.OnPrepMatchStarted()");
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[备战] 调用 BattleManager 开始比赛异常: " + e.Message);
+            }
+
+            if (!started)
+            {
+                // 回退到 GameManager.start_match()
+                try
+                {
+                    if (GameManager.Instance != null)
+                        GameManager.Instance.start_match();
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning("[备战] GameManager.start_match() 异常: " + e.Message);
+                }
+                MatchStartedFromPrep?.Invoke();
+            }
         }
 
         private void OnBackToMenu()
@@ -1551,10 +1780,18 @@ namespace BattleBall.UI
                 _foodOption.AddOptions(opts);
                 return;
             }
-            var backpack = InventoryManager.Instance.GetBackpackByType("consumable");
+            List<Dictionary<string, object>> backpack = new List<Dictionary<string, object>>();
+            try
+            {
+                backpack = InventoryManager.Instance.GetBackpackConsumables() ?? new List<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[备战] GetBackpackConsumables 异常: " + e.Message);
+            }
             foreach (var item in backpack)
             {
-                var foodData = NutritionManager.Instance.GetFood(GetStr(item, "item_id", ""));
+                var foodData = NutritionManager.Instance != null ? NutritionManager.Instance.GetFood(GetStr(item, "item_id", "")) : null;
                 if (foodData == null || foodData.Count == 0) continue;
                 var effect = GetDict(foodData, "effect", new Dictionary<string, object>());
                 var statNameMap = new Dictionary<string, string>
@@ -1570,22 +1807,31 @@ namespace BattleBall.UI
             }
             _foodOption.AddOptions(opts);
 
-            // 如果已经吃过食物，显示状态
-            string activeId = NutritionManager.Instance.GetActiveFoodId();
-            if (activeId != "")
+            // 如果已经吃过食物，显示状态（NutritionManager 为空时兜底）
+            if (NutritionManager.Instance == null)
             {
-                var activeFood = NutritionManager.Instance.GetFood(activeId);
-                _foodStatusLabel.text = "已吃: " + GetStr(activeFood, "name", "?");
-                _foodStatusLabel.color = new Color(0.3f, 0.9f, 0.3f);
+                _foodStatusLabel.text = "营养系统未就绪";
+                _foodStatusLabel.color = new Color(0.6f, 0.6f, 0.6f);
                 _foodEatBtn.interactable = false;
-                _foodOption.interactable = false;
             }
             else
             {
-                _foodStatusLabel.text = "整场只能吃1种1次";
-                _foodStatusLabel.color = new Color(0.6f, 0.6f, 0.6f);
-                _foodEatBtn.interactable = true;
-                _foodOption.interactable = true;
+                string activeId = NutritionManager.Instance.GetActiveFoodId();
+                if (activeId != "")
+                {
+                    var activeFood = NutritionManager.Instance.GetFood(activeId);
+                    _foodStatusLabel.text = "已吃: " + GetStr(activeFood, "name", "?");
+                    _foodStatusLabel.color = new Color(0.3f, 0.9f, 0.3f);
+                    _foodEatBtn.interactable = false;
+                    _foodOption.interactable = false;
+                }
+                else
+                {
+                    _foodStatusLabel.text = "整场只能吃1种1次";
+                    _foodStatusLabel.color = new Color(0.6f, 0.6f, 0.6f);
+                    _foodEatBtn.interactable = true;
+                    _foodOption.interactable = true;
+                }
             }
         }
 
@@ -1601,11 +1847,20 @@ namespace BattleBall.UI
             }
 
             // 获取选中的食物ID（从背包列表里取）
-            var backpack = InventoryManager.Instance.GetBackpackByType("consumable");
+            List<Dictionary<string, object>> backpack = new List<Dictionary<string, object>>();
+            try
+            {
+                if (InventoryManager.Instance != null)
+                    backpack = InventoryManager.Instance.GetBackpackConsumables() ?? new List<Dictionary<string, object>>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[备战] GetBackpackConsumables 异常: " + e.Message);
+            }
             var foodItems = new List<Dictionary<string, object>>();
             foreach (var item in backpack)
             {
-                var foodData = NutritionManager.Instance.GetFood(GetStr(item, "item_id", ""));
+                var foodData = NutritionManager.Instance != null ? NutritionManager.Instance.GetFood(GetStr(item, "item_id", "")) : null;
                 if (foodData != null && foodData.Count > 0)
                     foodItems.Add(item);
             }

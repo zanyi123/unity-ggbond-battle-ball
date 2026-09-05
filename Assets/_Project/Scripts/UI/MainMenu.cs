@@ -23,6 +23,7 @@ namespace BattleBall.UI
         private CharacterSystem _charUI = null;
         private BaseSystem _baseUI = null;
         private GameObject _spiritUI = null;
+        private GameObject _devUI = null;
 
         private Font _defaultFont;
         private Canvas _canvas;
@@ -322,7 +323,12 @@ namespace BattleBall.UI
 
         private void OnOpenSpirits()
         {
-            Debug.Log("[Main] 元灵系统 - 待实现");
+            if (_spiritUI != null) { Destroy(_spiritUI); _spiritUI = null; }
+            var go = new GameObject("SpiritUI", typeof(RectTransform));
+            _spiritUI = go;
+            go.AddComponent<SpiritUI>();
+            go.GetComponent<RectTransform>().SetParent(_canvasRect, false);
+            Debug.Log("[Main] 元灵系统已打开");
         }
 
         private void OnOpenBase()
@@ -341,7 +347,12 @@ namespace BattleBall.UI
 
         private void OnOpenDevSettings()
         {
-            Debug.Log("[Main] 快捷设置 - 待实现");
+            if (_devUI != null) { Destroy(_devUI); _devUI = null; }
+            var go = new GameObject("DevSettings", typeof(RectTransform));
+            _devUI = go;
+            go.AddComponent<DevSettings>();
+            go.GetComponent<RectTransform>().SetParent(_canvasRect, false);
+            Debug.Log("[Main] 管理员快捷设置已打开");
         }
 
         private void OnToggleReward()

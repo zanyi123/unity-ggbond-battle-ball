@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using BattleBall.Core;
@@ -117,21 +117,41 @@ namespace BattleBall.UI
 
         private void LoadData()
         {
-            // Unity: 通过 TextAsset 加载 JSON
-            var ta = Resources.Load<TextAsset>("data/characters/characters");
-            if (ta != null)
+            // 尝试从全局 DataManager 获取真实角色数据
+            var dm = DataManager.Instance;
+            if (dm != null)
             {
-                // 这里保留与 GDScript 相同的解析意图。
-                // 实际项目应使用 JsonUtility 或第三方 JSON 库解析完整结构到字段。
-                // 由于 GDScript 的 JSON.parse 输出无类型 Dictionary，这里以简单方式保留兼容：
-                // 解析失败时打印错误，解析成功时填充 _charactersData。
-                // 由于 JsonUtility 对 Dictionary 支持有限，建议项目接入 Newtonsoft.Json。
-                Debug.LogError("[CharacterSystem] 角色数据加载需要项目接入 JSON 库（如 Newtonsoft.Json）后再实现完整解析");
+                var list = dm.GetAllCharacters();
+                if (list != null && list.Count > 0)
+                {
+                    _charactersData = list;
+                    return;
+                }
             }
-            if (_charactersData == null || _charactersData.Count == 0)
+
+            // 兜底：DataManager 为空或数据为空时，使用硬编码测试数据
+            Debug.LogWarning("[CharacterSystem] DataManager 数据不可用，使用硬编码测试数据兜底");
+            _charactersData = new List<Dictionary<string, object>>
             {
-                Debug.LogError("[CharacterSystem] 角色数据加载失败");
-            }
+                new Dictionary<string, object>
+                {
+                    {"id", "char_001"}, {"name", "猪猪侠"}, {"stamina", 80.0},
+                    {"defense", 60.0}, {"speed", 75.0}, {"attack", 38.0},
+                    {"resilience", 50.0}, {"defense_factor", 0.15}, {"ball_speed", 420.0},
+                    {"element", "金刚"}, {"spirit_preference", "金刚"},
+                    {"talent_name", "不屈意志"}, {"talent_desc", "体力低于30%时攻击力+15%"},
+                    {"ultimate_skill", "猛虎金刚闪"}, {"description", "主角，攻守兼备的全能型球员"}
+                },
+                new Dictionary<string, object>
+                {
+                    {"id", "char_002"}, {"name", "超人强"}, {"stamina", 90.0},
+                    {"defense", 85.0}, {"speed", 60.0}, {"attack", 55.0},
+                    {"resilience", 70.0}, {"defense_factor", 0.18}, {"ball_speed", 380.0},
+                    {"element", "雷火"}, {"spirit_preference", "雷火"},
+                    {"talent_name", "钢铁壁垒"}, {"talent_desc", "防御时受到伤害减少20%"},
+                    {"ultimate_skill", "绝对防御"}, {"description", "防守核心，铜墙铁壁的坚盾型球员"}
+                }
+            };
         }
 
         private void BuildUI()
