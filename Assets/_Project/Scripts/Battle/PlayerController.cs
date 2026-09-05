@@ -81,6 +81,13 @@ namespace BattleBall.Battle
             _rb = GetComponent<Rigidbody>();
             if (_rb == null) _rb = gameObject.AddComponent<Rigidbody>();
             _rb.isKinematic = true; _rb.useGravity = false;
+            // 确保有碰撞体(球的OnTriggerEnter需要球员有Collider才能触发传球/接球/伤害)
+            var col = GetComponent<Collider>();
+            if (col == null) {
+                var sc = gameObject.AddComponent<SphereCollider>();
+                sc.isTrigger = true;
+                sc.radius = 0.4f;
+            }
         }
 
         public virtual void Initialize(string _charId, string _team, bool _controlled)

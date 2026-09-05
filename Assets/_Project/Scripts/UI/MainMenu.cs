@@ -31,6 +31,12 @@ namespace BattleBall.UI
 
         void Start()
         {
+            // 确保有 EventSystem（按钮点击需要）
+            if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null) {
+                var es = new GameObject("EventSystem");
+                es.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
             _rect = GetComponent<RectTransform>();
             if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
             SetFullRect(_rect);
@@ -293,7 +299,7 @@ namespace BattleBall.UI
         private void OnStartMatch()
         {
             // 切换到备战场景（目前直接进入比赛）
-            SceneManager.LoadScene("battle_arena");
+            SceneManager.LoadScene("TestBattle");
         }
 
         private void OnOpenCharacters()
