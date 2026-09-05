@@ -638,9 +638,9 @@ namespace BattleBall.UI
             var grid = NewGridLayout("Grid", 3, content.transform);
 
             Dictionary<string, object> trainingStats = new Dictionary<string, object>();
-            if (TrainingManager.Instance != null && HasMethod(TrainingManager.Instance, "GetTrainingStats"))
+            if (TrainingManager.Instance != null)
             {
-                try { trainingStats = TrainingManager.Instance.GetTrainingStats() ?? new Dictionary<string, object>(); }
+                try { trainingStats = TrainingManager.Instance.GetTrainingData(0) ?? new Dictionary<string, object>(); }
                 catch { trainingStats = new Dictionary<string, object>(); }
             }
 
