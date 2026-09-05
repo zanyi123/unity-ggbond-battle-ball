@@ -9,14 +9,15 @@ namespace BattleBall.Battle
     public class BallController : MonoBehaviour
     {
         public float ballSpeed = 4f;
+        /// <summary>传球专用球速(较慢，保证飞行过程可见)</summary>
+        public float passBallSpeed = 3f;
         public float maxFlightDistance = 5f;
-        public float fieldXMin = -6.5f, fieldXMax = 6.5f;
-        public float fieldZMin = -3.9f, fieldZMax = 3.9f;
-        public float goalZHalf = 1.3f;
-        public float outFieldXMin = -8.5f, outFieldXMax = 8.5f;
+        // 场地边界常量(已×2，对应GD field_zone + 球场模型放大2倍)
+        public float fieldXMin = -13f, fieldXMax = 13f;
+        public float fieldZMin = -7.8f, fieldZMax = 7.8f;
+        public float outFieldXMin = -17f, outFieldXMax = 17f;
 
         public event Action<Transform, float, string> OnBallHitPlayer;
-        public event Action<string> OnGoalScored;
         public event Action<string> OnBallOutOfBounds;
         public event Action<Transform> OnBallReturned;
         public event Action<Transform> OnLaunched;
@@ -137,19 +138,13 @@ namespace BattleBall.Battle
         protected virtual void _CheckBoundaries()
         {
             var p = transform.position;
+            // 决竞球无球门，出界即按半场分配球权
             if (p.x < outFieldXMin) { OnBallOutOfBounds?.Invoke("left"); _ReturnToNearest("A"); return; }
             if (p.x > outFieldXMax) { OnBallOutOfBounds?.Invoke("right"); _ReturnToNearest("B"); return; }
             if (p.z < fieldZMin - 2.0f || p.z > fieldZMax + 2.0f)
             {
                 _ReturnToNearest(p.x < 0f ? "A" : "B");
                 return;
-            }
-            if (Mathf.Abs(p.z) > fieldZMax + 0.5f && Mathf.Abs(p.x) < goalZHalf)
-            {
-                string scoringTeam = p.z > 0 ? "A" : "B";
-                OnGoalScored?.Invoke(scoringTeam);
-                Stop();
-                Debug.Log("[Ball] Goal! team=" + scoringTeam);
             }
         }
 
@@ -189,6 +184,7 @@ namespace BattleBall.Battle
         {
             Stop();
             if (p == null) return;
+            string fromName = owner != null ? owner.name : "null";
             if (owner != null && owner != p)
             {
                 var opc = owner.GetComponent<PlayerController>();
@@ -198,7 +194,24 @@ namespace BattleBall.Battle
             var npc = p.GetComponent<PlayerController>();
             if (npc != null) npc.SetCarryingBall(this, true);
             OnBallReturned?.Invoke(p);
-            Debug.Log("[Ball] -> " + p.name);
+            Debug.Log("[Pass] " + fromName + " -> " + p.name);
+            // 接球视觉反馈: 0.2s缩放脉冲
+            StartCoroutine(_CatchPulse());
+        }
+
+        private IEnumerator _CatchPulse()
+        {
+            var target = ballMesh != null ? ballMesh : transform;
+            Vector3 orig = target.localScale;
+            float t = 0f;
+            while (t < 0.2f)
+            {
+                t += Time.deltaTime;
+                float k = Mathf.Sin((t / 0.2f) * Mathf.PI);
+                target.localScale = orig * (1f + k * 0.5f);
+                yield return null;
+            }
+            target.localScale = orig;
         }
 
         protected virtual void OnTriggerEnter(Collider other)
@@ -217,7 +230,7 @@ namespace BattleBall.Battle
                 var atkPc = lastAttacker.GetComponent<PlayerController>();
                 if (atkPc != null && atkPc.team.ToUpper() == pc.team.ToUpper())
                 {
-                    Debug.Log("[Ball] 同队接球: " + t.name);
+                    // 同队接球: ReturnToPlayer 内部会打印传球链路
                     ReturnToPlayer(t);
                     return;
                 }

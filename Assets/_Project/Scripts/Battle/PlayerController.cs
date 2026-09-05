@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -37,8 +37,9 @@ namespace BattleBall.Battle
         public bool is_defeated = false;
         public float max_stamina = 100f;
 
-        public float clampXMin = -6.5f, clampXMax = 6.5f;
-        public float clampZMin = -3.9f, clampZMax = 3.9f;
+        // 场地边界(已×2，对应球场模型放大2倍)
+        public float clampXMin = -13f, clampXMax = 13f;
+        public float clampZMin = -7.8f, clampZMax = 7.8f;
 
         public float hp, stamina;
         public bool isSprinting;

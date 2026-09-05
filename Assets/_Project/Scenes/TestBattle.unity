@@ -375,6 +375,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f53593c4942d004e8ebe5dd4c68c6ce, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f53593c4942d004e8ebe5dd4c68c6ce, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9f53593c4942d004e8ebe5dd4c68c6ce, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 9f53593c4942d004e8ebe5dd4c68c6ce, type: 3}
       propertyPath: m_Name
       value: BattleField
@@ -609,7 +621,7 @@ Transform:
   m_GameObject: {fileID: 454884208}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
-  m_LocalPosition: {x: 5.5, y: 0, z: 2}
+  m_LocalPosition: {x: 11, y: 0, z: 4}
   m_LocalScale: {x: 1, y: 1.0000001, z: 1.0000001}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -895,7 +907,7 @@ Transform:
   m_GameObject: {fileID: 753516009}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.5, y: 0, z: -2}
+  m_LocalPosition: {x: -11, y: 0, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1177,7 +1189,7 @@ Transform:
   m_GameObject: {fileID: 976030964}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.5, y: 0, z: 0}
+  m_LocalPosition: {x: -11, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1545,7 +1557,7 @@ Transform:
   m_GameObject: {fileID: 1101419207}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
-  m_LocalPosition: {x: 5.5, y: 0, z: 0}
+  m_LocalPosition: {x: 11, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1791,7 +1803,7 @@ Transform:
   m_GameObject: {fileID: 1146099180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
-  m_LocalPosition: {x: 5.5, y: 0, z: -2}
+  m_LocalPosition: {x: 11, y: 0, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1991,7 +2003,7 @@ Transform:
   m_GameObject: {fileID: 1175894077}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.5, y: 0, z: 2}
+  m_LocalPosition: {x: -11, y: 0, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2185,14 +2197,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballSpeed: 4
+  passBallSpeed: 3
   maxFlightDistance: 5
-  fieldXMin: -6.5
-  fieldXMax: 6.5
-  fieldZMin: -3.9
-  fieldZMax: 3.9
-  goalZHalf: 1.3
-  outFieldXMin: -8.5
-  outFieldXMax: 8.5
+  fieldXMin: -13
+  fieldXMax: 13
+  fieldZMin: -7.8
+  fieldZMax: 7.8
+  outFieldXMin: -17
+  outFieldXMax: 17
   owner: {fileID: 0}
   lastAttacker: {fileID: 0}
   flightDir: {x: 0, y: 0, z: 0}
