@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -347,7 +347,7 @@ namespace BattleBall.UI
         private void OnToggleReward()
         {
             bool current = RewardSystem.RewardEnabledStatic();
-            RewardSystem.SetRewardEnabledStatic(!current);
+            RewardSystem.RewardSetEnabledStatic(!current);
             // 重建奖励按钮
             ClearMainMenu();
             BuildMainMenu(_currentMode == "admin");
