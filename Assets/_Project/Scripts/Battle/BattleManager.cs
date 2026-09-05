@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using BattleBall.Core;
 using BattleBall.Battle.AI;
+using BattleBall.UI;
 
 namespace BattleBall.Battle
 {
@@ -24,6 +27,10 @@ namespace BattleBall.Battle
         public List<PlayerController> team_a_players = new List<PlayerController>();
         public List<PlayerController> team_b_players = new List<PlayerController>();
         public BallController ball_node = null;
+        // UI界面引用
+        private PreparationUI _prepUI = null;
+        private MatchResultUI _resultUI = null;
+        private Canvas _uiCanvas = null;
 
         // 场地规则常量(已×2，对应GD field_zone.gd)
         // 内场 x=-380~380(*0.01=3.8, *2放大=7.6), 外场 x=-510~510(*0.01*2=10.2)
@@ -51,9 +58,17 @@ namespace BattleBall.Battle
             {
                 pc.defeated += _OnPlayerDefeated;
             }
-            if (!match_started && teamA.Count > 0 && teamB.Count > 0) {
-                Kickoff();
+            // 创建UI Canvas
+            _EnsureUICanvas();
+            // 监听GameManager阶段变化
+            var gm = GameManager.Instance;
+            if (gm != null) {
+                gm.phase_changed += _OnPhaseChanged;
+                gm.match_ended += _OnMatchEnded;
             }
+            // 显示备战界面(开场备战)
+            _ShowPreparationUI(false);
+            Debug.Log("[BM] 备战界面已显示，等待玩家开始比赛");
         }
 
         private static readonly string[] CHAR_IDS = new string[] { "char_001","char_002","char_003","char_004","char_005","char_006" };
@@ -101,6 +116,98 @@ namespace BattleBall.Battle
             ai.initialize(this, null);
             if (ballNode != null) ai.ball_node = ballNode;
             Debug.Log("[BM] AI注册完成 ai_players=" + ai.ai_players.Count);
+        }
+
+        private void _ShowPreparationUI(bool isHalfTime) {
+            if (_prepUI != null) { Destroy(_prepUI.gameObject); _prepUI = null; }
+            var prepGo = new GameObject("PreparationUI", typeof(RectTransform));
+            _prepUI = prepGo.AddComponent<PreparationUI>();
+            prepGo.GetComponent<RectTransform>().SetParent(_uiCanvas.transform, false);
+            // 传入球员数据
+            var players = new List<PlayerController>();
+            foreach (var t in teamA) { var pc = t.GetComponent<PlayerController>(); if (pc != null) players.Add(pc); }
+            _prepUI.LoadBattleData(players);
+            _prepUI.SetHalfTimeMode(isHalfTime);
+            _prepUI.MatchStartedFromPrep += _OnPrepMatchStarted;
+            _prepUI.BackToMenuRequested += _OnBackToMenu;
+            Debug.Log("[BM] 备战界面显示 (中场=" + isHalfTime + ")");
+        }
+
+        private void _HidePreparationUI() {
+            if (_prepUI != null) { Destroy(_prepUI.gameObject); _prepUI = null; }
+        }
+
+        private void _OnPrepMatchStarted() {
+            _HidePreparationUI();
+            var gm = GameManager.Instance;
+            if (gm != null) gm.start_match();
+            match_started = true;
+            state = MatchState.Half1;
+            _assign_initial_ball();
+            Debug.Log("[BM] 比赛开始!");
+        }
+
+        private void _OnBackToMenu() {
+            SceneManager.LoadScene("MainMenu");
+        }
+
+        private void _OnPhaseChanged(GameManager.MatchPhase newPhase) {
+            switch (newPhase) {
+                case GameManager.MatchPhase.HALF_TIME:
+                    Debug.Log("[BM] 上半场结束 → 中场休息备战");
+                    match_started = false;
+                    _FreezeAllPlayers();
+                    _ShowPreparationUI(true);
+                    break;
+                case GameManager.MatchPhase.SECOND_HALF:
+                    Debug.Log("[BM] 下半场开始!");
+                    _HidePreparationUI();
+                    match_started = true;
+                    _assign_initial_ball();
+                    break;
+                case GameManager.MatchPhase.RESULTS:
+                    Debug.Log("[BM] 比赛结束 → 结算");
+                    match_started = false;
+                    _FreezeAllPlayers();
+                    break;
+            }
+        }
+
+        private void _OnMatchEnded(int scoreA, int scoreB, string result) {
+            StartCoroutine(_ShowResultUIDelayed(scoreA, scoreB, result));
+        }
+
+        private IEnumerator _ShowResultUIDelayed(int sA, int sB, string result) {
+            yield return new WaitForSeconds(2f);
+            if (_resultUI != null) { Destroy(_resultUI.gameObject); _resultUI = null; }
+            var resultGo = new GameObject("MatchResultUI", typeof(RectTransform));
+            _resultUI = resultGo.AddComponent<MatchResultUI>();
+            resultGo.GetComponent<RectTransform>().SetParent(_uiCanvas.transform, false);
+            _resultUI.ResultConfirmed += () => {
+                Destroy(_resultUI.gameObject); _resultUI = null;
+                SceneManager.LoadScene("MainMenu");
+            };
+            Debug.Log("[BM] 结算界面已显示 A:" + sA + " B:" + sB + " " + result);
+        }
+
+        private void _FreezeAllPlayers() {
+            foreach (var pc in _GetAllPlayers()) {
+                if (pc != null) pc.SetState(PlayerState.Idle);
+            }
+            var bc = ballNode != null ? ballNode.GetComponent<BallController>() : null;
+            if (bc != null) bc.Stop();
+        }
+
+        private void _EnsureUICanvas() {
+            _uiCanvas = FindObjectOfType<Canvas>();
+            if (_uiCanvas == null) {
+                var canvasGo = new GameObject("UICanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                _uiCanvas = canvasGo.GetComponent<Canvas>();
+                _uiCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                var scaler = canvasGo.GetComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1440, 900);
+            }
         }
 
         void _AutoBindPlayers() {
@@ -151,6 +258,12 @@ namespace BattleBall.Battle
         protected virtual void Update()
         {
             if (!match_started) return;
+            // 同步比分到GameManager
+            var gm = GameManager.Instance;
+            if (gm != null) {
+                gm.score_team_a = scoreA;
+                gm.score_team_b = scoreB;
+            }
             _CheckViolations();
         }
 

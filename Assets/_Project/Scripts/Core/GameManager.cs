@@ -51,15 +51,9 @@ namespace BattleBall.Core
         public virtual float get_half_time_duration()   => sim_half_duration_override > 0f ? sim_half_duration_override * 0.2f : HALF_TIME_DURATION;
 
         protected virtual void Start() {
-            if (match_phase == MatchPhase.PREP) {
-                // sim模式自动进入比赛（不用手动点备战）
-                StartCoroutine(_AutoStartAfterFrame());
-            }
-        }
-
-        private IEnumerator _AutoStartAfterFrame() {
-            yield return new WaitForSeconds(0.3f);
-            start_match();
+            // 备战阶段由 BattleManager 控制，不自动开始
+            // 玩家在备战界面点"开始比赛"后由 BattleManager 调用 start_match()
+            match_phase = MatchPhase.PREP;
         }
 
         protected virtual void Update() {
