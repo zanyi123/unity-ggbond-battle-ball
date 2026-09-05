@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -31,6 +31,14 @@ namespace BattleBall.UI
 
         void Start()
         {
+            // 确保有相机(场景没相机会Game窗口黑屏)
+            if (FindObjectOfType<Camera>() == null) {
+                var camGo = new GameObject("MainCamera");
+                var cam = camGo.AddComponent<Camera>();
+                cam.clearFlags = CameraClearFlags.SolidColor;
+                cam.backgroundColor = new Color(0.05f, 0.05f, 0.1f);
+                camGo.tag = "MainCamera";
+            }
             // 确保有 EventSystem（按钮点击需要）
             if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null) {
                 var es = new GameObject("EventSystem");
