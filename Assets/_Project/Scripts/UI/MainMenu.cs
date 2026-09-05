@@ -97,6 +97,14 @@ namespace BattleBall.UI
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        /// <summary>GD左上角坐标(x向右,y向下) → Unity中心坐标(x向右,y向上)</summary>
+        private static Vector2 GDToUnity(Vector2 gdPos)
+        {
+            // 参考分辨率 1440x900
+            return new Vector2(gdPos.x - 720f, 450f - gdPos.y);
         }
 
         private GameObject NewColorRect(string name, Vector2 pos, Vector2 size, Color color, Transform parent)
@@ -104,7 +112,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = GDToUnity(pos);
             rt.sizeDelta = size;
             go.GetComponent<Image>().color = color;
             return go;
@@ -115,7 +126,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = GDToUnity(pos);
             rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
@@ -132,7 +146,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos;
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = GDToUnity(pos);
             rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.55f, 0.9f);
 
