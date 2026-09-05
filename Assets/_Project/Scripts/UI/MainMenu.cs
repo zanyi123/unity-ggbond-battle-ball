@@ -25,8 +25,6 @@ namespace BattleBall.UI
         private MonoBehaviour _spiritUI = null; // 元灵系统类型未实现，用基类占位
         private BaseSystem _baseUI = null;
 
-        private const float Pix = 0.01f;
-
         private RectTransform _rect;
 
         void Start()
@@ -106,8 +104,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = color;
             return go;
         }
@@ -117,8 +115,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
@@ -134,9 +132,9 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
-            go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
+            go.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.55f, 0.9f);
 
             var txtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
             var trt = txtGo.GetComponent<RectTransform>();

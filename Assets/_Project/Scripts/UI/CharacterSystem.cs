@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using BattleBall.Core;
@@ -90,9 +90,6 @@ namespace BattleBall.UI
         private Text _talentDesc;
         private Text _spiritLabel;
         private Text _ultimateLabel;
-
-        private const float Pix = 0.01f;
-
         private RectTransform _rect;
 
         void Start()
@@ -147,8 +144,8 @@ namespace BattleBall.UI
             var titleBarGo = new GameObject("TitleBar", typeof(RectTransform), typeof(HorizontalLayoutGroup));
             var tbrt = titleBarGo.GetComponent<RectTransform>();
             tbrt.SetParent(transform, false);
-            tbrt.anchoredPosition = new Vector2(0, 15) * Pix;
-            tbrt.sizeDelta = new Vector2(1440, 45) * Pix;
+            tbrt.anchoredPosition = new Vector2(0, 15);
+            tbrt.sizeDelta = new Vector2(1440, 45);
 
             var title = NewLabel("Title", Vector2.zero, new Vector2(1300, 45), "角色系统", 30, new Color(1, 0.9f, 0.3f), titleBarGo.transform);
             title.alignment = TextAnchor.MiddleCenter;
@@ -163,8 +160,8 @@ namespace BattleBall.UI
             lprt.anchorMin = new Vector2(0, 1);
             lprt.anchorMax = new Vector2(0, 1);
             lprt.pivot = new Vector2(0, 1);
-            lprt.anchoredPosition = new Vector2(30, -75) * Pix;
-            lprt.sizeDelta = new Vector2(270, 700) * Pix;
+            lprt.anchoredPosition = new Vector2(30, -75);
+            lprt.sizeDelta = new Vector2(270, 700);
             leftPanel.GetComponent<Image>().color = new Color(0.12f, 0.12f, 0.18f, 1.0f);
 
             // 左侧列表挂到 left_panel 下
@@ -174,10 +171,10 @@ namespace BattleBall.UI
             listRt.anchorMin = new Vector2(0, 1);
             listRt.anchorMax = new Vector2(0, 1);
             listRt.pivot = new Vector2(0, 1);
-            listRt.anchoredPosition = new Vector2(20, -5) * Pix;
-            listRt.sizeDelta = new Vector2(240, 690) * Pix;
+            listRt.anchoredPosition = new Vector2(20, -5);
+            listRt.sizeDelta = new Vector2(240, 690);
             _avatarList = listGo.GetComponent<VerticalLayoutGroup>();
-            _avatarList.spacing = 6 * Pix;
+            _avatarList.spacing = 6;
             _avatarList.childControlWidth = true;
             _avatarList.childControlHeight = true;
             _avatarList.childForceExpandWidth = true;
@@ -194,7 +191,7 @@ namespace BattleBall.UI
                 var btnGo = new GameObject("AvatarBtn_" + i, typeof(RectTransform), typeof(Image), typeof(Button));
                 var brt = btnGo.GetComponent<RectTransform>();
                 brt.SetParent(listGo.transform, false);
-                brt.sizeDelta = new Vector2(240, 90) * Pix;
+                brt.sizeDelta = new Vector2(240, 90);
                 btnGo.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
                 var btn = btnGo.GetComponent<Button>();
 
@@ -224,8 +221,8 @@ namespace BattleBall.UI
             rprt.anchorMin = new Vector2(0, 1);
             rprt.anchorMax = new Vector2(0, 1);
             rprt.pivot = new Vector2(0, 1);
-            rprt.anchoredPosition = new Vector2(PanelX - 8, -(PanelY - 8)) * Pix;
-            rprt.sizeDelta = new Vector2(PanelWidth + 16, PanelVisibleHeight + 16) * Pix;
+            rprt.anchoredPosition = new Vector2(PanelX - 8, -(PanelY - 8));
+            rprt.sizeDelta = new Vector2(PanelWidth + 16, PanelVisibleHeight + 16);
             rightPanel.GetComponent<Image>().color = new Color(0.10f, 0.10f, 0.15f, 1.0f);
 
             // 滚动容器
@@ -235,8 +232,8 @@ namespace BattleBall.UI
             srt.anchorMin = new Vector2(0, 1);
             srt.anchorMax = new Vector2(0, 1);
             srt.pivot = new Vector2(0, 1);
-            srt.anchoredPosition = new Vector2(PanelX, -PanelY) * Pix;
-            srt.sizeDelta = new Vector2(PanelWidth, PanelVisibleHeight) * Pix;
+            srt.anchoredPosition = new Vector2(PanelX, -PanelY);
+            srt.sizeDelta = new Vector2(PanelWidth, PanelVisibleHeight);
             scrollGo.GetComponent<Image>().color = new Color(0, 0, 0, 0);
 
             var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
@@ -389,7 +386,7 @@ namespace BattleBall.UI
                 else maxVal = StatMax;
                 float ratio = Mathf.Clamp(val / maxVal, 0f, 1f);
                 if (fillRt != null)
-                    fillRt.sizeDelta = new Vector2(StatBarWidth * ratio, StatBarHeight) * Pix;
+                    fillRt.sizeDelta = new Vector2(StatBarWidth * ratio, StatBarHeight);
                 if (label != null)
                 {
                     if (key == "defense_factor")
@@ -444,8 +441,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = color;
             return go;
         }
@@ -455,8 +452,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
@@ -472,8 +469,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
             var txtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));

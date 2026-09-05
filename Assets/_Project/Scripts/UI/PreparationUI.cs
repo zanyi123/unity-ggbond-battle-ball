@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -113,9 +113,6 @@ namespace BattleBall.UI
         // 元灵选择弹窗
         private int _spiritPopupPlayerIndex = -1;
         private GameObject _spiritPopup = null;
-
-        private const float Pix = 0.01f;
-
         private RectTransform _rect;
 
         void Start()
@@ -209,8 +206,8 @@ namespace BattleBall.UI
             var cardGo = new GameObject("PlayerCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y) * Pix;
-            crt.sizeDelta = new Vector2(370, 160) * Pix;
+            crt.anchoredPosition = new Vector2(x, y);
+            crt.sizeDelta = new Vector2(370, 160);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             // 位置标签
@@ -235,8 +232,8 @@ namespace BattleBall.UI
             var staminaBarGo = new GameObject("StaminaBar", typeof(RectTransform), typeof(Slider));
             var sbrt = staminaBarGo.GetComponent<RectTransform>();
             sbrt.SetParent(cardGo.transform, false);
-            sbrt.anchoredPosition = new Vector2(60, 38) * Pix;
-            sbrt.sizeDelta = new Vector2(200, 18) * Pix;
+            sbrt.anchoredPosition = new Vector2(60, 38);
+            sbrt.sizeDelta = new Vector2(200, 18);
             var staminaBar = staminaBarGo.GetComponent<Slider>();
             SetupSlider(staminaBar);
             staminaBar.value = 1.0f;
@@ -320,8 +317,8 @@ namespace BattleBall.UI
             var cardGo = new GameObject("SpiritCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y) * Pix;
-            crt.sizeDelta = new Vector2(370, 140) * Pix;
+            crt.anchoredPosition = new Vector2(x, y);
+            crt.sizeDelta = new Vector2(370, 140);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             // 位置标签
@@ -350,8 +347,8 @@ namespace BattleBall.UI
             var iconPanelGo = new GameObject("IconPanel", typeof(RectTransform), typeof(Image));
             var iprt = iconPanelGo.GetComponent<RectTransform>();
             iprt.SetParent(cardGo.transform, false);
-            iprt.anchoredPosition = new Vector2(280, 15) * Pix;
-            iprt.sizeDelta = new Vector2(70, 70) * Pix;
+            iprt.anchoredPosition = new Vector2(280, 15);
+            iprt.sizeDelta = new Vector2(70, 70);
             iconPanelGo.GetComponent<Image>().color = new Color(0.3f, 0.3f, 0.4f);
 
             var iconLabel = NewLabel("IconLabel", new Vector2(285, 28), new Vector2(60, 40), "未\n装备", 12, new Color(0.8f, 0.8f, 0.8f), cardGo.transform);
@@ -365,8 +362,8 @@ namespace BattleBall.UI
                 var sbox = new GameObject("SkillBox_" + s, typeof(RectTransform), typeof(Image));
                 var sbrt = sbox.GetComponent<RectTransform>();
                 sbrt.SetParent(cardGo.transform, false);
-                sbrt.anchoredPosition = new Vector2(280 + s * 30, 90) * Pix;
-                sbrt.sizeDelta = new Vector2(28, 28) * Pix;
+                sbrt.anchoredPosition = new Vector2(280 + s * 30, 90);
+                sbrt.sizeDelta = new Vector2(28, 28);
                 var sbg = sbox.GetComponent<Image>();
                 sbg.color = new Color(0.2f, 0.2f, 0.2f);
 
@@ -410,8 +407,8 @@ namespace BattleBall.UI
             var cardGo = new GameObject("EquipCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y) * Pix;
-            crt.sizeDelta = new Vector2(370, 70) * Pix;
+            crt.anchoredPosition = new Vector2(x, y);
+            crt.sizeDelta = new Vector2(370, 70);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             // 位置标签
@@ -469,8 +466,8 @@ namespace BattleBall.UI
             var cardGo = new GameObject("TrainCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y) * Pix;
-            crt.sizeDelta = new Vector2(370, 90) * Pix;
+            crt.anchoredPosition = new Vector2(x, y);
+            crt.sizeDelta = new Vector2(370, 90);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             var posLabel = NewLabel("PosLabel", new Vector2(10, 5), new Vector2(120, 20), "位置 " + (index + 1) + " 训练", 14, new Color(0.5f, 0.9f, 0.6f), cardGo.transform);
@@ -562,8 +559,8 @@ namespace BattleBall.UI
             prt.anchorMin = new Vector2(0.5f, 0.5f);
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
-            prt.anchoredPosition = new Vector2((200 + 800) / 2 - 720, (60 + 680) / 2 - 360) * Pix; // 简化居中
-            prt.sizeDelta = new Vector2(800, 620) * Pix;
+            prt.anchoredPosition = new Vector2((200 + 800) / 2 - 720, (60 + 680) / 2 - 360); // 简化居中
+            prt.sizeDelta = new Vector2(800, 620);
             panelGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             var title = NewLabel("Title", new Vector2(10, 10), new Vector2(400, 30), "训练 - " + charName, 20, new Color(0.5f, 0.9f, 0.6f), panelGo.transform);
@@ -602,8 +599,8 @@ namespace BattleBall.UI
                 var barGo = new GameObject("Bar_" + statKey, typeof(RectTransform), typeof(Slider));
                 var brt = barGo.GetComponent<RectTransform>();
                 brt.SetParent(panelGo.transform, false);
-                brt.anchoredPosition = new Vector2(80, rowY) * Pix;
-                brt.sizeDelta = new Vector2(400, 24) * Pix;
+                brt.anchoredPosition = new Vector2(80, rowY);
+                brt.sizeDelta = new Vector2(400, 24);
                 var bar = barGo.GetComponent<Slider>();
                 SetupSlider(bar);
                 bar.maxValue = maxVal;
@@ -741,7 +738,7 @@ namespace BattleBall.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.anchoredPosition = Vector2.zero;
-            prt.sizeDelta = new Vector2(800, 620) * Pix;
+            prt.sizeDelta = new Vector2(800, 620);
             panelGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             var title = NewLabel("Title", new Vector2(10, 10), new Vector2(400, 30), "装备选择 - " + charName, 20, new Color(0.9f, 0.7f, 0.3f), panelGo.transform);
@@ -751,8 +748,8 @@ namespace BattleBall.UI
             var equippedRowGo = new GameObject("EquippedRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
             var ert = equippedRowGo.GetComponent<RectTransform>();
             ert.SetParent(panelGo.transform, false);
-            ert.anchoredPosition = new Vector2(10, 50) * Pix;
-            ert.sizeDelta = new Vector2(780, 30) * Pix;
+            ert.anchoredPosition = new Vector2(10, 50);
+            ert.sizeDelta = new Vector2(780, 30);
             var equippedRow = equippedRowGo.GetComponent<HorizontalLayoutGroup>();
             equippedRow.childControlWidth = true;
             equippedRow.childForceExpandWidth = true;
@@ -784,8 +781,8 @@ namespace BattleBall.UI
             // 3个槽位的装备列表
             var scroll = NewScrollView("Scroll", panelGo.transform);
             var scrollRt = scroll.GetComponent<RectTransform>();
-            scrollRt.anchoredPosition = new Vector2(10, 90) * Pix;
-            scrollRt.sizeDelta = new Vector2(780, 480) * Pix;
+            scrollRt.anchoredPosition = new Vector2(10, 90);
+            scrollRt.sizeDelta = new Vector2(780, 480);
 
             // 按槽位分组显示背包里的装备
             foreach (string slotKey in EquipSlotOrder)
@@ -837,7 +834,7 @@ namespace BattleBall.UI
                         var rowGo = new GameObject("Row_" + iid, typeof(RectTransform), typeof(HorizontalLayoutGroup));
                         var rrt = rowGo.GetComponent<RectTransform>();
                         rrt.SetParent(scroll.GetComponent<ScrollRect>().content, false);
-                        rrt.sizeDelta = new Vector2(780, 30) * Pix;
+                        rrt.sizeDelta = new Vector2(780, 30);
                         var row = rowGo.GetComponent<HorizontalLayoutGroup>();
                         row.childControlWidth = true;
                         row.childForceExpandWidth = true;
@@ -846,7 +843,7 @@ namespace BattleBall.UI
                         var colorBoxGo = new GameObject("ColorBox", typeof(RectTransform), typeof(Image));
                         var cbRt = colorBoxGo.GetComponent<RectTransform>();
                         cbRt.SetParent(rowGo.transform, false);
-                        cbRt.sizeDelta = new Vector2(6, 30) * Pix;
+                        cbRt.sizeDelta = new Vector2(6, 30);
                         colorBoxGo.GetComponent<Image>().color = InventoryManager.Instance.GetRarityColor(irarity);
 
                         var nameLbl = NewLabel("Name", Vector2.zero, new Vector2(200, 30), "  " + iname + " (x" + icount + ")", 14, InventoryManager.Instance.GetRarityColor(irarity), rowGo.transform);
@@ -873,7 +870,7 @@ namespace BattleBall.UI
                 var sepGo = new GameObject("Sep", typeof(RectTransform), typeof(Image));
                 var seprt = sepGo.GetComponent<RectTransform>();
                 seprt.SetParent(scroll.GetComponent<ScrollRect>().content, false);
-                seprt.sizeDelta = new Vector2(780, 1) * Pix;
+                seprt.sizeDelta = new Vector2(780, 1);
                 sepGo.GetComponent<Image>().color = new Color(0.3f, 0.3f, 0.3f);
             }
 
@@ -986,8 +983,8 @@ namespace BattleBall.UI
             var foodOptGo = new GameObject("FoodOption", typeof(RectTransform), typeof(Dropdown));
             var fort = foodOptGo.GetComponent<RectTransform>();
             fort.SetParent(transform, false);
-            fort.anchoredPosition = new Vector2(1020, 757) * Pix;
-            fort.sizeDelta = new Vector2(200, 30) * Pix;
+            fort.anchoredPosition = new Vector2(1020, 757);
+            fort.sizeDelta = new Vector2(200, 30);
             _foodOption = foodOptGo.GetComponent<Dropdown>();
 
             _foodEatBtn = NewButton("FoodEatBtn", new Vector2(1230, 757), new Vector2(60, 30), "食用", 13, new Color(0.9f, 0.7f, 0.3f), transform);
@@ -1262,14 +1259,14 @@ namespace BattleBall.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.anchoredPosition = Vector2.zero;
-            prt.sizeDelta = new Vector2(900, Mathf.Min(popupH + 50, 700)) * Pix;
+            prt.sizeDelta = new Vector2(900, Mathf.Min(popupH + 50, 700));
             panelGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
             // 滚动容器
             var scroll = NewScrollView("Scroll", panelGo.transform);
             var scrollRt = scroll.GetComponent<RectTransform>();
-            scrollRt.anchoredPosition = new Vector2(10, 40) * Pix;
-            scrollRt.sizeDelta = new Vector2(880, Mathf.Min(popupH + 20, 620)) * Pix;
+            scrollRt.anchoredPosition = new Vector2(10, 40);
+            scrollRt.sizeDelta = new Vector2(880, Mathf.Min(popupH + 20, 620));
 
             // 元灵卡片列表
             var elementColors = new Dictionary<string, Color>
@@ -1295,15 +1292,15 @@ namespace BattleBall.UI
                 var cardGo = new GameObject("SpiritCard_" + i, typeof(RectTransform), typeof(Image));
                 var crt = cardGo.GetComponent<RectTransform>();
                 crt.SetParent(scroll.GetComponent<ScrollRect>().content, false);
-                crt.sizeDelta = new Vector2(850, 100) * Pix;
+                crt.sizeDelta = new Vector2(850, 100);
                 cardGo.GetComponent<Image>().color = new Color(0.12f, 0.15f, 0.22f, 0.98f);
 
                 // 左侧：元素颜色圆形头像
                 var avatarGo = new GameObject("Avatar", typeof(RectTransform), typeof(Image));
                 var avrt = avatarGo.GetComponent<RectTransform>();
                 avrt.SetParent(cardGo.transform, false);
-                avrt.anchoredPosition = new Vector2(10, 20) * Pix;
-                avrt.sizeDelta = new Vector2(60, 60) * Pix;
+                avrt.anchoredPosition = new Vector2(10, 20);
+                avrt.sizeDelta = new Vector2(60, 60);
                 // 圆形头像：用 Sprite 或简单 Image 占位
                 avatarGo.GetComponent<Image>().color = elemColor;
 
@@ -1729,8 +1726,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = color;
             return go;
         }
@@ -1740,8 +1737,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
@@ -1757,8 +1754,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
             var txtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));

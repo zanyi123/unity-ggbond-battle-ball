@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using BattleBall.Core;
@@ -40,9 +40,6 @@ namespace BattleBall.UI
         private static readonly Color AccentColor = new Color(0.3f, 0.6f, 1.0f);
 
         public event System.Action ResultConfirmed;
-
-        private const float Pix = 0.01f;
-
         private RectTransform _rect;
 
         void Start()
@@ -65,7 +62,7 @@ namespace BattleBall.UI
             mrt.SetParent(transform, false);
             SetFullRect(mrt);
             var mainVbox = mainVboxGo.GetComponent<VerticalLayoutGroup>();
-            mainVbox.spacing = 10 * Pix;
+            mainVbox.spacing = 10;
             mainVbox.childControlWidth = true;
             mainVbox.childControlHeight = true;
             mainVbox.childForceExpandWidth = true;
@@ -75,7 +72,7 @@ namespace BattleBall.UI
             var topSpacer = new GameObject("TopSpacer", typeof(RectTransform));
             var tsrt = topSpacer.GetComponent<RectTransform>();
             tsrt.SetParent(mainVboxGo.transform, false);
-            tsrt.sizeDelta = new Vector2(0, 30) * Pix;
+            tsrt.sizeDelta = new Vector2(0, 30);
 
             // 结果标题
             AddResultHeader(mainVboxGo.transform);
@@ -90,7 +87,7 @@ namespace BattleBall.UI
             var tabContainerGo = new GameObject("TabContainer", typeof(RectTransform), typeof(VerticalLayoutGroup));
             var tcrt = tabContainerGo.GetComponent<RectTransform>();
             tcrt.SetParent(mainVboxGo.transform, false);
-            tcrt.sizeDelta = new Vector2(0, 400) * Pix;
+            tcrt.sizeDelta = new Vector2(0, 400);
             _tabContainer = tabContainerGo.GetComponent<VerticalLayoutGroup>();
             _tabContainer.spacing = 0;
             _tabContainer.childControlWidth = true;
@@ -152,7 +149,7 @@ namespace BattleBall.UI
             var sbRt = scoreBoxGo.GetComponent<RectTransform>();
             sbRt.SetParent(parent, false);
             var scoreBox = scoreBoxGo.GetComponent<HorizontalLayoutGroup>();
-            scoreBox.spacing = 20 * Pix;
+            scoreBox.spacing = 20;
             scoreBox.childControlWidth = true;
             scoreBox.childControlHeight = true;
             scoreBox.childForceExpandWidth = true;
@@ -175,7 +172,7 @@ namespace BattleBall.UI
             var tbRt = tabBarGo.GetComponent<RectTransform>();
             tbRt.SetParent(parent, false);
             var tabBar = tabBarGo.GetComponent<HorizontalLayoutGroup>();
-            tabBar.spacing = 5 * Pix;
+            tabBar.spacing = 5;
             tabBar.childControlWidth = true;
             tabBar.childControlHeight = true;
             tabBar.childForceExpandWidth = true;
@@ -353,7 +350,7 @@ namespace BattleBall.UI
             rvRt.offsetMin = Vector2.zero;
             rvRt.offsetMax = Vector2.zero;
             var rewardVbox = rewardVboxGo.GetComponent<VerticalLayoutGroup>();
-            rewardVbox.spacing = 4 * Pix;
+            rewardVbox.spacing = 4;
             rewardVbox.childControlWidth = true;
             rewardVbox.childControlHeight = true;
             rewardVbox.childForceExpandWidth = true;
@@ -395,7 +392,7 @@ namespace BattleBall.UI
             cRt.SetParent(_tabContainer.transform, false);
             var center = centerGo.GetComponent<VerticalLayoutGroup>();
             center.childAlignment = TextAnchor.MiddleCenter;
-            center.spacing = 10 * Pix;
+            center.spacing = 10;
             center.childControlWidth = true;
             center.childControlHeight = true;
             center.childForceExpandWidth = true;
@@ -413,7 +410,7 @@ namespace BattleBall.UI
             var spacer = new GameObject("Spacer", typeof(RectTransform));
             var sRt = spacer.GetComponent<RectTransform>();
             sRt.SetParent(centerGo.transform, false);
-            sRt.sizeDelta = new Vector2(0, 20) * Pix;
+            sRt.sizeDelta = new Vector2(0, 20);
 
             // 确认按钮
             var confirmBtn = NewButton("ConfirmBtn", Vector2.zero, new Vector2(220, 48), "确认返回主菜单", 18, Color.white, centerGo.transform);
@@ -462,8 +459,8 @@ namespace BattleBall.UI
             var grid = gridGo.GetComponent<GridLayoutGroup>();
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             grid.constraintCount = 3;
-            grid.spacing = new Vector2(20, 4) * Pix;
-            grid.cellSize = new Vector2(150, 25) * Pix;
+            grid.spacing = new Vector2(20, 4);
+            grid.cellSize = new Vector2(150, 25);
 
             // 标题行
             var nameLbl = NewLabel("Name", Vector2.zero, new Vector2(100, 25), GetStr(ps, "player_name", "?"), 16, AccentColor, gridGo.transform);
@@ -503,7 +500,7 @@ namespace BattleBall.UI
             var rRt = rowGo.GetComponent<RectTransform>();
             rRt.SetParent(parent, false);
             var row = rowGo.GetComponent<HorizontalLayoutGroup>();
-            row.spacing = 10 * Pix;
+            row.spacing = 10;
             row.childControlWidth = true;
             row.childControlHeight = true;
             row.childForceExpandWidth = true;
@@ -569,7 +566,7 @@ namespace BattleBall.UI
             crt.offsetMin = Vector2.zero;
             crt.offsetMax = Vector2.zero;
             var cvg = content.GetComponent<VerticalLayoutGroup>();
-            cvg.spacing = 4 * Pix;
+            cvg.spacing = 4;
             cvg.childControlWidth = true;
             cvg.childControlHeight = true;
             cvg.childForceExpandWidth = true;
@@ -588,8 +585,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
@@ -605,8 +602,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
             var txtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));

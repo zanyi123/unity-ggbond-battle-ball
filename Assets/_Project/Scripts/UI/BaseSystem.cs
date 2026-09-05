@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -23,8 +23,6 @@ namespace BattleBall.UI
         private Dictionary<string, Text> _currencyLabels = new Dictionary<string, Text>();
 
         // 像素 → 米，除以 100
-        private const float Pix = 0.01f;
-
         private RectTransform _rect;
 
         void Start()
@@ -51,8 +49,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var img = go.GetComponent<Image>();
             img.color = color;
             return go;
@@ -64,8 +62,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
@@ -82,8 +80,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
             var txtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
@@ -108,8 +106,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var vg = go.GetComponent<VerticalLayoutGroup>();
             vg.childControlWidth = true;
             vg.childControlHeight = true;
@@ -308,10 +306,10 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(transform, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var vg = go.GetComponent<VerticalLayoutGroup>();
-            vg.spacing = 4 * Pix;
+            vg.spacing = 4;
             vg.childControlWidth = true;
             vg.childControlHeight = true;
             vg.childForceExpandWidth = true;
@@ -447,8 +445,8 @@ namespace BattleBall.UI
                     var iconRectGo = new GameObject("IconRect", typeof(RectTransform), typeof(RawImage));
                     var irt = iconRectGo.GetComponent<RectTransform>();
                     irt.SetParent(cardGo.transform, false);
-                    irt.anchoredPosition = new Vector2(8, 8) * Pix;
-                    irt.sizeDelta = new Vector2(80, 80) * Pix;
+                    irt.anchoredPosition = new Vector2(8, 8);
+                    irt.sizeDelta = new Vector2(80, 80);
                     var ri = iconRectGo.GetComponent<RawImage>();
                     ri.texture = tex;
                 }

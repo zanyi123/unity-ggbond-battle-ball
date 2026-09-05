@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using BattleBall.Core;
@@ -15,9 +15,6 @@ namespace BattleBall.UI
         private GridLayoutGroup _characterGrid;
         private List<Dictionary<string, object>> _availableCharacters = new List<Dictionary<string, object>>();
         private string _selectedCharId = "";
-
-        private const float Pix = 0.01f;
-
         void Start()
         {
             SetupUI();
@@ -27,8 +24,8 @@ namespace BattleBall.UI
         {
             var rt = GetComponent<RectTransform>();
             if (rt == null) rt = gameObject.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(600, 900) * Pix;
-            rt.anchoredPosition = new Vector2(300, 200) * Pix;
+            rt.sizeDelta = new Vector2(600, 900);
+            rt.anchoredPosition = new Vector2(300, 200);
 
             // 背景
             var bgGo = new GameObject("BG", typeof(RectTransform), typeof(Image));
@@ -46,8 +43,8 @@ namespace BattleBall.UI
             var gridGo = new GameObject("CharacterGrid", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
             var gridRt = gridGo.GetComponent<RectTransform>();
             gridRt.SetParent(transform, false);
-            gridRt.anchoredPosition = new Vector2(50, 70) * Pix;
-            gridRt.sizeDelta = new Vector2(500, 280) * Pix;
+            gridRt.anchoredPosition = new Vector2(50, 70);
+            gridRt.sizeDelta = new Vector2(500, 280);
             _characterGrid = gridGo.GetComponent<GridLayoutGroup>();
             _characterGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             _characterGrid.constraintCount = 3;
@@ -122,8 +119,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             var lbl = go.GetComponent<Text>();
             lbl.text = text;
             lbl.fontSize = fontSize;
@@ -139,8 +136,8 @@ namespace BattleBall.UI
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(parent, false);
-            rt.anchoredPosition = pos * Pix;
-            rt.sizeDelta = size * Pix;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
             go.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
             var txtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
