@@ -33,7 +33,18 @@ namespace BattleBall.Systems.Training
         protected virtual void Awake() {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
     }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AutoCreate()
+        {
+            if (Instance == null)
+            {
+                var go = new GameObject("TrainingManager");
+                go.AddComponent<TrainingManager>();
+            }
+        }
 }

@@ -52,7 +52,18 @@ namespace BattleBall.Core
                 return;
             }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
             LoadAllData();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AutoCreate()
+        {
+            if (Instance == null)
+            {
+                var go = new GameObject("DataManager");
+                go.AddComponent<DataManager>();
+            }
         }
 
         private void OnDestroy()

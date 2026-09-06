@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -43,6 +43,7 @@ namespace BattleBall.Core
         protected virtual void Awake() {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
 

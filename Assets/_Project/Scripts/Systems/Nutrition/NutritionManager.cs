@@ -37,6 +37,7 @@ namespace BattleBall.Systems.Nutrition
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
@@ -288,4 +289,14 @@ namespace BattleBall.Systems.Nutrition
         public virtual Dictionary<string, object> GetTeamBonuses() { return new Dictionary<string, object>(); }
         public virtual bool ConsumeFood(string foodId) { return true; }
     }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AutoCreate()
+        {
+            if (Instance == null)
+            {
+                var go = new GameObject("NutritionManager");
+                go.AddComponent<NutritionManager>();
+            }
+        }
 }
