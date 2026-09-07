@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using BattleBall.Battle;
 using BattleBall.Core;
@@ -60,6 +61,9 @@ namespace BattleBall.UI
             }
             // 确保有Canvas
             _EnsureCanvas();
+            // 确保有EventSystem（主菜单场景的EventSystem随场景卸载被销毁，
+            // TestBattle场景中没有序列化的EventSystem，不补建则全部uGUI按钮无响应）
+            _EnsureEventSystem();
             // 创建比赛内 HUD（底部己方球员状态面板，初始隐藏，比赛正式开始后显示）
             _EnsureBattleHud();
             // 监听BattleManager事件
@@ -91,6 +95,13 @@ namespace BattleBall.UI
                 scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 scaler.referenceResolution = new Vector2(1440, 900);
             }
+        }
+
+        private void _EnsureEventSystem()
+        {
+            if (FindObjectOfType<EventSystem>() != null) return;
+            var go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            Debug.Log("[Bridge] 已补建 EventSystem（战斗场景缺少事件系统会导致按钮无响应）");
         }
 
         private void _EnsureBattleHud()
