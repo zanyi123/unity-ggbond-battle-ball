@@ -79,6 +79,18 @@ namespace BattleBall.UI
                 skills_data = GetTestSkills();
             }
 
+            // 数据为空时兜底：确保面板始终有内容可显示
+            if (spirits_data == null || spirits_data.Count == 0)
+            {
+                Debug.LogWarning("[SpiritUI] DataManager 未返回元灵数据，使用测试数据兜底");
+                spirits_data = GetTestSpirits();
+            }
+            if (skills_data == null || skills_data.Count == 0)
+            {
+                Debug.LogWarning("[SpiritUI] DataManager 未返回技能数据，使用测试数据兜底");
+                skills_data = GetTestSkills();
+            }
+
             // 测试数据：每个元灵默认解锁第一个技能并装备到主动1槽
             foreach (var s in spirits_data)
             {

@@ -1,7 +1,8 @@
 ﻿{
   "name": "BattleBall.Battle",
   "references": [
-    "BattleBall.Core"
+    "BattleBall.Core",
+    "UnityEngine.UI"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

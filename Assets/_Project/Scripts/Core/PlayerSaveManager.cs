@@ -52,9 +52,20 @@ namespace BattleBall.Core
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AutoCreate()
+        {
+            if (Instance == null)
+            {
+                var go = new GameObject("PlayerSaveManager");
+                go.AddComponent<PlayerSaveManager>();
+            }
+        }
 
         protected virtual void Start()
         {
@@ -782,6 +793,95 @@ namespace BattleBall.Core
                 }
             }
             return result;
+        }
+        // ==================== PascalCase 兼容方法（UI 调用） ====================
+
+        /// <summary>UI兼容: 获取货币（float版本）</summary>
+        public float GetCurrency(string type)
+        {
+            return (float)get_currency(type);
+        }
+
+        /// <summary>UI兼容: 获取货币（Dictionary版本）</summary>
+        public Dictionary<string, float> GetCurrency()
+        {
+            var r = new Dictionary<string, float>();
+            r["gold"] = (float)get_currency("gold");
+            r["spirit_ore"] = (float)get_currency("spirit_ore");
+            r["spirit_crystal"] = (float)get_currency("spirit_crystal");
+            r["fairy_coin"] = (float)get_currency("fairy_coin");
+            return r;
+        }
+
+        /// <summary>UI兼容: 货币字典转object</summary>
+        public Dictionary<string, object> GetCurrencyAsObject()
+        {
+            var r = new Dictionary<string, object>();
+            foreach (var kv in GetCurrency()) r[kv.Key] = kv.Value;
+            return r;
+        }
+
+        /// <summary>UI兼容: 增加货币</summary>
+        public void AddCurrency(string type, float amount)
+        {
+            add_currency(type, (int)amount);
+        }
+
+        /// <summary>UI兼容: 获取所有装备</summary>
+        public Dictionary<string, Dictionary<string, object>> GetAllEquipped()
+        {
+            var r = new Dictionary<string, Dictionary<string, object>>();
+            var all = get_all_equipped();
+            if (all != null)
+            {
+                foreach (var kv in all)
+                {
+                    if (kv.Value is Dictionary<string, object> d) r[kv.Key] = d;
+                }
+            }
+            return r;
+        }
+
+        /// <summary>UI兼容: 获取角色训练数据</summary>
+        public Dictionary<string, object> GetCharacterTrain(string charId)
+        {
+            return get_character_train(charId);
+        }
+
+        /// <summary>UI兼容: 获取装备物品（返回含item_id的字典）</summary>
+        public Dictionary<string, object> GetEquippedItem(string charId, string slot)
+        {
+            var r = new Dictionary<string, object>();
+            r["item_id"] = get_equipped_item(charId, slot);
+            return r;
+        }
+
+        /// <summary>UI兼容: 获取装备耐久（返回含current的字典）</summary>
+        public Dictionary<string, object> GetEquippedDurability(string charId, string slot)
+        {
+            var r = new Dictionary<string, object>();
+            r["current"] = get_equipped_durability(charId, slot);
+            var def = get_equipped_item(charId, slot);
+            r["max"] = 100f;
+            return r;
+        }
+
+        /// <summary>UI兼容: 获取装备加成</summary>
+        public Dictionary<string, object> GetEquipmentBonuses(string charId)
+        {
+            return get_equipment_bonuses(charId);
+        }
+
+        /// <summary>UI兼容: 获取存档数据</summary>
+        public Dictionary<string, object> GetData()
+        {
+            return get_data();
+        }
+
+        /// <summary>UI兼容: 保存存档</summary>
+        public void SaveData()
+        {
+            save_slot();
         }
     }
 }

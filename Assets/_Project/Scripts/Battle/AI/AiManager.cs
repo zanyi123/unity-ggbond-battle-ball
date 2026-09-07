@@ -20,6 +20,7 @@ namespace BattleBall.Battle.AI
         public Dictionary<string, Vector3> known_positions = new Dictionary<string, Vector3>();
     }
 
+    [DefaultExecutionOrder(-200)]
     public class AiManager : MonoBehaviour
     {
         public const float FIELD_X_MIN=-3.80f, FIELD_X_MAX=3.80f, FIELD_Z_MIN=-2.60f, FIELD_Z_MAX=2.60f;

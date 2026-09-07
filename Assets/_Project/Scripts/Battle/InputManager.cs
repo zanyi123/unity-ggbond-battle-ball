@@ -8,6 +8,7 @@ using BattleBall.Battle;
 namespace BattleBall.Battle
 {
     /// <summary>按原GD input_manager.gd 术语：左键瞄准投球、右键接球/冲刺、1/2/3切人、4/5/6技能、C取消、Tab切主控</summary>
+    [DefaultExecutionOrder(-150)]
     public class InputManager : MonoBehaviour
     {
         public PlayerController controlledPlayer;

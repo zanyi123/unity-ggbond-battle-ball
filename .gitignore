@@ -29,3 +29,5 @@ sysinfo.txt
 crashlytics-build.properties
 Thumbs.db
 .DS_Store
+.workbuddy/
+.trae/

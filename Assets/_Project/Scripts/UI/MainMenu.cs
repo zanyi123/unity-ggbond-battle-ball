@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using BattleBall.Core;
-using PlayerSaveManager = BattleBall.Systems.PlayerSaveManager;
+using PlayerSaveManager = BattleBall.Core.PlayerSaveManager;
 using BattleBall.Systems;
 
 namespace BattleBall.UI

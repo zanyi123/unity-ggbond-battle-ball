@@ -37,9 +37,9 @@ namespace BattleBall.Battle
         public bool is_defeated = false;
         public float max_stamina = 100f;
 
-        // 场地边界(已×2，对应球场模型放大2倍)
-        public float clampXMin = -13f, clampXMax = 13f;
-        public float clampZMin = -7.8f, clampZMax = 7.8f;
+        // 场地边界(外场可视白线: x=±10.2, z=±6.5, 已含球场模型×2放大)
+        public float clampXMin = -10.2f, clampXMax = 10.2f;
+        public float clampZMin = -6.5f, clampZMax = 6.5f;
 
         public float hp, stamina;
         public bool isSprinting;
@@ -57,9 +57,66 @@ namespace BattleBall.Battle
         /// <summary>UI 兼容 (PascalCase): 角色数据字典 (同 charData)</summary>
         public Dictionary<string, object> CharData { get { return charData; } }
 
-        // ===== UI (PreparationUI 1365/1377) 精灵装备兼容 =====
-        public virtual void EquipSpirit(Dictionary<string, object> spiritData) { Debug.Log("[PC] EquipSpirit: "+(spiritData != null ? spiritData.ContainsKey("id")? spiritData["id"] : "?" : "null")); }
-        public virtual void UnequipSpirit() { Debug.Log("[PC] UnequipSpirit 调用"); }
+        // ===== UI (PreparationUI) 精灵装备: 落实元灵数据链路 =====
+        public virtual void EquipSpirit(Dictionary<string, object> spiritData)
+        {
+            if (spiritData == null || !spiritData.ContainsKey("id") || spiritData["id"] == null)
+            {
+                UnequipSpirit();
+                return;
+            }
+            spirit_id = spiritData["id"].ToString();
+            equipped_skills.Clear();
+            // 技能来源优先级: 元灵数据自带 skills 列表(spirits.json) → DataManager 按 spirit_id 反查
+            if (spiritData.TryGetValue("skills", out var skillsObj) && skillsObj != null)
+            {
+                IEnumerable skillEnum = null;
+                if (skillsObj is IEnumerable enumerable && !(skillsObj is string)) skillEnum = enumerable;
+                if (skillEnum != null)
+                    foreach (var sid in skillEnum)
+                        if (sid != null && !string.IsNullOrEmpty(sid.ToString()))
+                            equipped_skills.Add(sid.ToString());
+            }
+            var dm = DataManager.Instance;
+            if (equipped_skills.Count == 0 && dm != null)
+            {
+                foreach (var s in dm.get_skills_for_spirit(spirit_id))
+                {
+                    if (s == null || !s.TryGetValue("id", out var sid) || sid == null) continue;
+                    equipped_skills.Add(sid.ToString());
+                }
+            }
+            spirit_energy = max_spirit_energy;
+            RegisterSpiritSkills();
+            Debug.Log("[PC] EquipSpirit: " + spirit_id + " 携带技能 " + equipped_skills.Count + " 个");
+        }
+
+        public virtual void UnequipSpirit()
+        {
+            spirit_id = "";
+            equipped_skills.Clear();
+            RegisterSpiritSkills();
+            Debug.Log("[PC] UnequipSpirit 调用");
+        }
+
+        /// <summary>把 equipped_skills 注册到 SpiritSystemManager(反射调用 set_player_skills，Battle 程序集不能直接引用 Systems 程序集)。playerId 约定 = GetInstanceID()。</summary>
+        public void RegisterSpiritSkills()
+        {
+            var go = GameObject.Find("SpiritSystemManager");
+            if (go == null) return;
+            var comp = go.GetComponent<MonoBehaviour>();
+            if (comp == null) return;
+            var mi = comp.GetType().GetMethod("set_player_skills");
+            if (mi == null) return;
+            try
+            {
+                mi.Invoke(comp, new object[] { GetInstanceID(), new List<string>(equipped_skills) });
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[PC] RegisterSpiritSkills 失败: " + e.Message);
+            }
+        }
 
         private float _staggerTimer = 0f;
         private float _knockbackTimer = 0f;

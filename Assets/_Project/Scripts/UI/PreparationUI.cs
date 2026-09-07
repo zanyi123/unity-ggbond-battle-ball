@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using BattleBall.Core;
-using PlayerSaveManager = BattleBall.Systems.PlayerSaveManager;
+using PlayerSaveManager = BattleBall.Core.PlayerSaveManager;
 
 namespace BattleBall.UI
 {
@@ -126,6 +126,9 @@ namespace BattleBall.UI
             _defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _rect = GetComponent<RectTransform>();
             if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
+            // 与其它系统 UI（CharacterSystem/SpiritUI/BaseSystem 等）保持一致：
+            // 根节点铺满父 Canvas 并以左上角为原点，否则所有左上锚定的子元素整体偏移
+            SetFullRect(_rect);
             BuildUI();
             // 从存档恢复已吃食物状态
             if (NutritionManager.Instance != null)
@@ -213,7 +216,10 @@ namespace BattleBall.UI
             var cardGo = new GameObject("PlayerCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y);
+            crt.anchorMin = new Vector2(0f, 1f);
+            crt.anchorMax = new Vector2(0f, 1f);
+            crt.pivot = new Vector2(0f, 1f);
+            crt.anchoredPosition = new Vector2(x, -y);
             crt.sizeDelta = new Vector2(370, 160);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
@@ -324,7 +330,10 @@ namespace BattleBall.UI
             var cardGo = new GameObject("SpiritCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y);
+            crt.anchorMin = new Vector2(0f, 1f);
+            crt.anchorMax = new Vector2(0f, 1f);
+            crt.pivot = new Vector2(0f, 1f);
+            crt.anchoredPosition = new Vector2(x, -y);
             crt.sizeDelta = new Vector2(370, 140);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
@@ -414,7 +423,10 @@ namespace BattleBall.UI
             var cardGo = new GameObject("EquipCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y);
+            crt.anchorMin = new Vector2(0f, 1f);
+            crt.anchorMax = new Vector2(0f, 1f);
+            crt.pivot = new Vector2(0f, 1f);
+            crt.anchoredPosition = new Vector2(x, -y);
             crt.sizeDelta = new Vector2(370, 70);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
@@ -473,7 +485,10 @@ namespace BattleBall.UI
             var cardGo = new GameObject("TrainCard_" + index, typeof(RectTransform), typeof(Image));
             var crt = cardGo.GetComponent<RectTransform>();
             crt.SetParent(transform, false);
-            crt.anchoredPosition = new Vector2(x, y);
+            crt.anchorMin = new Vector2(0f, 1f);
+            crt.anchorMax = new Vector2(0f, 1f);
+            crt.pivot = new Vector2(0f, 1f);
+            crt.anchoredPosition = new Vector2(x, -y);
             crt.sizeDelta = new Vector2(370, 90);
             cardGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.22f, 0.95f);
 
@@ -990,7 +1005,10 @@ namespace BattleBall.UI
             var foodOptGo = new GameObject("FoodOption", typeof(RectTransform), typeof(Dropdown));
             var fort = foodOptGo.GetComponent<RectTransform>();
             fort.SetParent(transform, false);
-            fort.anchoredPosition = new Vector2(1020, 757);
+            fort.anchorMin = new Vector2(0f, 1f);
+            fort.anchorMax = new Vector2(0f, 1f);
+            fort.pivot = new Vector2(0f, 1f);
+            fort.anchoredPosition = new Vector2(1020, -757);
             fort.sizeDelta = new Vector2(200, 30);
             _foodOption = foodOptGo.GetComponent<Dropdown>();
 
@@ -2061,6 +2079,13 @@ namespace BattleBall.UI
             if (v is int) return (int)v;
             int r;
             return int.TryParse(v.ToString(), out r) ? r : def;
+        }
+
+        private static int GetInt(Dictionary<string, int> d, string key, int def)
+        {
+            if (d == null) return def;
+            int v;
+            return d.TryGetValue(key, out v) ? v : def;
         }
 
         private static float GetFloat(Dictionary<string, object> d, string key, float def)

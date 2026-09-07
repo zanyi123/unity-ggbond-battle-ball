@@ -500,10 +500,10 @@ MonoBehaviour:
   defense: 20
   defenseFactor: 0.15
   resilience: 50
-  clampXMin: -6.5
-  clampXMax: 6.5
-  clampZMin: -3.9
-  clampZMax: 3.9
+  clampXMin: -10.2
+  clampXMax: 10.2
+  clampZMin: -6.5
+  clampZMax: 6.5
   hp: 0
   stamina: 100
   isSprinting: 0
@@ -621,7 +621,7 @@ Transform:
   m_GameObject: {fileID: 454884208}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
-  m_LocalPosition: {x: 11, y: 0, z: 4}
+  m_LocalPosition: {x: 9, y: 0, z: 4}
   m_LocalScale: {x: 1, y: 1.0000001, z: 1.0000001}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -836,10 +836,10 @@ MonoBehaviour:
   defense: 20
   defenseFactor: 0.15
   resilience: 50
-  clampXMin: -6.5
-  clampXMax: 6.5
-  clampZMin: -3.9
-  clampZMax: 3.9
+  clampXMin: -10.2
+  clampXMax: 10.2
+  clampZMin: -6.5
+  clampZMax: 6.5
   hp: 0
   stamina: 100
   isSprinting: 0
@@ -907,7 +907,7 @@ Transform:
   m_GameObject: {fileID: 753516009}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11, y: 0, z: -4}
+  m_LocalPosition: {x: -9, y: 0, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1118,10 +1118,10 @@ MonoBehaviour:
   defense: 20
   defenseFactor: 0.15
   resilience: 50
-  clampXMin: -6.5
-  clampXMax: 6.5
-  clampZMin: -3.9
-  clampZMax: 3.9
+  clampXMin: -10.2
+  clampXMax: 10.2
+  clampZMin: -6.5
+  clampZMax: 6.5
   hp: 0
   stamina: 100
   isSprinting: 0
@@ -1189,7 +1189,7 @@ Transform:
   m_GameObject: {fileID: 976030964}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11, y: 0, z: 0}
+  m_LocalPosition: {x: -9, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1436,10 +1436,10 @@ MonoBehaviour:
   defense: 20
   defenseFactor: 0.15
   resilience: 50
-  clampXMin: -6.5
-  clampXMax: 6.5
-  clampZMin: -3.9
-  clampZMax: 3.9
+  clampXMin: -10.2
+  clampXMax: 10.2
+  clampZMin: -6.5
+  clampZMax: 6.5
   hp: 0
   stamina: 100
   isSprinting: 0
@@ -1557,7 +1557,7 @@ Transform:
   m_GameObject: {fileID: 1101419207}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
-  m_LocalPosition: {x: 11, y: 0, z: 0}
+  m_LocalPosition: {x: 9, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1682,10 +1682,10 @@ MonoBehaviour:
   defense: 20
   defenseFactor: 0.15
   resilience: 50
-  clampXMin: -6.5
-  clampXMax: 6.5
-  clampZMin: -3.9
-  clampZMax: 3.9
+  clampXMin: -10.2
+  clampXMax: 10.2
+  clampZMin: -6.5
+  clampZMax: 6.5
   hp: 0
   stamina: 100
   isSprinting: 0
@@ -1803,7 +1803,7 @@ Transform:
   m_GameObject: {fileID: 1146099180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
-  m_LocalPosition: {x: 11, y: 0, z: -4}
+  m_LocalPosition: {x: 9, y: 0, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1882,10 +1882,10 @@ MonoBehaviour:
   defense: 20
   defenseFactor: 0.15
   resilience: 50
-  clampXMin: -6.5
-  clampXMax: 6.5
-  clampZMin: -3.9
-  clampZMax: 3.9
+  clampXMin: -10.2
+  clampXMax: 10.2
+  clampZMin: -6.5
+  clampZMax: 6.5
   hp: 0
   stamina: 100
   isSprinting: 0
@@ -2003,7 +2003,7 @@ Transform:
   m_GameObject: {fileID: 1175894077}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11, y: 0, z: 4}
+  m_LocalPosition: {x: -9, y: 0, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2199,12 +2199,12 @@ MonoBehaviour:
   ballSpeed: 4
   passBallSpeed: 3
   maxFlightDistance: 5
-  fieldXMin: -13
-  fieldXMax: 13
-  fieldZMin: -7.8
-  fieldZMax: 7.8
-  outFieldXMin: -17
-  outFieldXMax: 17
+  fieldXMin: -10.2
+  fieldXMax: 10.2
+  fieldZMin: -6.5
+  fieldZMax: 6.5
+  outFieldXMin: -10.2
+  outFieldXMax: 10.2
   owner: {fileID: 0}
   lastAttacker: {fileID: 0}
   flightDir: {x: 0, y: 0, z: 0}

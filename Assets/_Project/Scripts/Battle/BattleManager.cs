@@ -39,6 +39,11 @@ namespace BattleBall.Battle
         public float innerZMin = -5.2f, innerZMax = 5.2f;
         public float outerXMin = -10.2f, outerXMax = 10.2f;
         public float centerX = 0f; // 中线 x=0
+        // 备战请求排队标志：规避「先触发后订阅」的时序竞态。
+        // BattleUIBridge 是运行时自动创建(AutoCreate)，其 Start() 晚于本场景对象的 Start()，
+        // 若在 Start() 里直接 Invoke 备战事件，会因订阅方尚未就绪而导致备战界面永不创建。
+        // 改为在首帧 Update() 里发出（此时所有 Start 已完成、订阅已就绪）。
+        private bool _prepRequested = false;
         // 违规状态追踪(防重复触发)
         private Dictionary<PlayerController, int> _violatingPlayers = new Dictionary<PlayerController, int>();
 
@@ -66,8 +71,10 @@ namespace BattleBall.Battle
                 gm.match_ended += _OnMatchEnded;
             }
             // 触发事件，由BattleUIBridge(UI层)创建备战界面
-            ShowPreparationRequested?.Invoke(false);
-            Debug.Log("[BM] 备战界面请求已发出，等待玩家开始比赛");
+            // 注：不能在此直接 Invoke —— BattleUIBridge 运行时创建、Start 晚于本场景 Start，
+            // 直接触发会因"先触发后订阅"导致备战界面永不创建(竞态)。改为首帧 Update 发出。
+            _prepRequested = true;
+            Debug.Log("[BM] 备战界面请求已排队，将于首帧 Update 发出");
         }
 
         private static readonly string[] CHAR_IDS = new string[] { "char_001","char_002","char_003","char_004","char_005","char_006" };
@@ -123,8 +130,20 @@ namespace BattleBall.Battle
             if (gm != null) gm.start_match();
             match_started = true;
             state = MatchState.Half1;
+            _SyncSpiritSkills();
             _assign_initial_ball();
             Debug.Log("[BM] 比赛开始!");
+        }
+
+        /// <summary>开赛时把所有球员的元灵技能注册到技能系统(备战界面 EquipSpirit 已写入 equipped_skills，此处兜底保证全员注册)</summary>
+        void _SyncSpiritSkills() {
+            int n = 0;
+            foreach (var pc in _GetAllPlayers()) {
+                if (pc == null) continue;
+                pc.RegisterSpiritSkills();
+                n++;
+            }
+            Debug.Log("[BM] 元灵技能注册完成, 球员数=" + n);
         }
 
         public void OnBackToMenu() {
@@ -199,6 +218,7 @@ namespace BattleBall.Battle
         public virtual void Kickoff() {
             scoreA = 0; scoreB = 0; match_started = true;
             state = MatchState.Half1;
+            _SyncSpiritSkills();
             OnMatchStateChanged?.Invoke(state.ToString());
             _assign_initial_ball();
             Debug.Log("[BM] Kickoff! state=Half1");
@@ -224,6 +244,13 @@ namespace BattleBall.Battle
 
         protected virtual void Update()
         {
+            // 首帧更新时再发出备战请求：此时 BattleUIBridge 的 Start 已执行、订阅已就绪
+            if (_prepRequested)
+            {
+                _prepRequested = false;
+                ShowPreparationRequested?.Invoke(false);
+                Debug.Log("[BM] 备战界面请求已发出，等待玩家开始比赛");
+            }
             if (!match_started) return;
             // 同步比分到GameManager
             var gm = GameManager.Instance;

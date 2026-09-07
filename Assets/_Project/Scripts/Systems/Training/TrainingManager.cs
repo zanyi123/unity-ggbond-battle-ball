@@ -36,7 +36,6 @@ namespace BattleBall.Systems.Training
             DontDestroyOnLoad(gameObject);
         }
         protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
-    }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void AutoCreate()
@@ -47,4 +46,5 @@ namespace BattleBall.Systems.Training
                 go.AddComponent<TrainingManager>();
             }
         }
+    }
 }

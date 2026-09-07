@@ -3,7 +3,7 @@
 ## A 层 编译 (最高优先: 0 CS0xxx Error)
 |ID|项目|接受标准|状态|
 |---|---|---|---|
-|A1|22 .cs 语法错=0|Console 0 CS0246/CS0103/CS1503/CS0115/CS0161|⬜|
+|A1|22 .cs 语法错=0|Console 0 CS0246/CS0103/CS1503/CS0115/CS0161|✅ 2026-09-07 MCP 核查 0 错 0 警(实际 54 .cs)|
 |A2|BattleHud UnityEngine.UI 无缺失|UGUI/TMP 包导入后 0 CS0246|⬜|
 |A3|跨命名空间引用齐全|AiManager 能引用 Battle.Core + Battle + Systems.*|⬜|
 |A4|@onready 字段不空|Awake/Start 赋值；Play 时无 MissingReferenceException|⬜|

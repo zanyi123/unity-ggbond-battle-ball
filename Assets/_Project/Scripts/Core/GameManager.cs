@@ -7,6 +7,7 @@ namespace BattleBall.Core
 {
     public enum MatchPhase { PREP, FIRST_HALF, HALF_TIME, SECOND_HALF, RESULTS }
 
+    [DefaultExecutionOrder(-300)]
     public class GameManager : MonoBehaviour
     {
         public const float FIRST_HALF_DURATION  = 300f;  // 5min
@@ -119,6 +120,16 @@ namespace BattleBall.Core
         }
         public virtual void resume_match() {
             if (!is_paused) return; is_paused = false; match_resumed?.Invoke();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AutoCreate()
+        {
+            if (Instance == null)
+            {
+                var go = new GameObject("GameManager");
+                go.AddComponent<GameManager>();
+            }
         }
     }
 }

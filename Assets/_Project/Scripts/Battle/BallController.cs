@@ -12,10 +12,10 @@ namespace BattleBall.Battle
         /// <summary>传球专用球速(较慢，保证飞行过程可见)</summary>
         public float passBallSpeed = 3f;
         public float maxFlightDistance = 5f;
-        // 场地边界常量(已×2，对应GD field_zone + 球场模型放大2倍)
-        public float fieldXMin = -13f, fieldXMax = 13f;
-        public float fieldZMin = -7.8f, fieldZMax = 7.8f;
-        public float outFieldXMin = -17f, outFieldXMax = 17f;
+        // 场地边界常量(对齐球场模型可视白线: 外场 x=±10.2, z=±6.5)
+        public float fieldXMin = -10.2f, fieldXMax = 10.2f;
+        public float fieldZMin = -6.5f, fieldZMax = 6.5f;
+        public float outFieldXMin = -10.2f, outFieldXMax = 10.2f;
 
         public event Action<Transform, float, string> OnBallHitPlayer;
         public event Action<string> OnBallOutOfBounds;

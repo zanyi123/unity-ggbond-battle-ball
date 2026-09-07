@@ -1,63 +1,198 @@
-// ================================================================
-// 决竞球 CLEAN_v2 合法骨架: SpiritSystemManager.cs [BattleBall.Systems.Spirit]
-// 语义逻辑: Step A~F 大类统一核对; [TODO Step-*] 处待后续补全
-// ================================================================
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System;
-using BattleBall.Core;
 using BattleBall.Battle;
+using BattleBall.Systems.Spirit;
+using BattleBall.Systems.SpiritSystem;
 
-namespace BattleBall.Systems.Spirit
+namespace BattleBall.Systems
 {
-
+    /// <summary>
+    /// 元灵技能系统管理器 - Autoload 单例
+    /// 整合技能触发器、标签效果处理器，提供统一入口
+    /// </summary>
     public class SpiritSystemManager : MonoBehaviour
     {
-        public Component skill_trigger_stub;
-        public Component tag_effect_handler_stub;
-        public Dictionary<int, GameObject> playerToSpirit = new Dictionary<int, GameObject>();
+        // ===== 事件（GD signal 转 C# event）=====
+        public event Action<string, int, bool> skill_used;
+        public event Action<string, Dictionary<string, object>> effect_applied;
+        public event Action<string, Dictionary<string, object>> effect_finished;
+        public event Action<string, Dictionary<string, object>> ui_feedback;
 
-        public static SpiritSystemManager Instance { get; protected set; }
+        // ===== 子组件 =====
+        public SpiritSkillTrigger skill_trigger;
+        public SpiritTagEffectHandler tag_effect_handler;
+
+        // ===== 系统状态 =====
+        protected bool _initialized = false;
+
+        public static SpiritSystemManager Instance { get; private set; }
+
         protected virtual void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-        protected virtual void OnDestroy() { if (Instance == this) Instance = null; }
 
+        protected virtual void Start()
+        {
+            Debug.Log("[SpiritSystemManager] 初始化中...");
 
-        protected T GetNode<T>(string path) where T : Component { var t = transform.Find(path); return t == null ? null : t.GetComponent<T>(); }
-        protected GameObject GetNode(string path) { var t = transform.Find(path); return t == null ? null : t.gameObject; }
-        protected Coroutine CreateTimer(float seconds, Action cb) { return StartCoroutine(_TimerCo(seconds, cb)); }
-        private IEnumerator _TimerCo(float s, Action cb) { yield return new WaitForSeconds(s); cb?.Invoke(); }
-        protected void CallDeferred(Action cb) { StartCoroutine(_CallDeferredCo(cb)); }
-        private IEnumerator _CallDeferredCo(Action cb) { yield return null; cb?.Invoke(); }
-        protected static float randf() { return UnityEngine.Random.value; }
-        protected static float randf_range(float a, float b) { return UnityEngine.Random.Range(a, b); }
-        protected void Emit(Action h) { h?.Invoke(); }
-        protected void Emit<T1>(Action<T1> h, T1 a) { h?.Invoke(a); }
-        protected void Emit<T1,T2>(Action<T1,T2> h, T1 a, T2 b) { h?.Invoke(a, b); }
-        protected void Emit<T1,T2,T3>(Action<T1,T2,T3> h, T1 a, T2 b, T3 c) { h?.Invoke(a, b, c); }
+            // 创建或获取技能触发器
+            skill_trigger = GetComponentInChildren<SpiritSkillTrigger>();
+            if (skill_trigger == null)
+            {
+                var go = new GameObject("SpiritSkillTrigger");
+                go.transform.SetParent(transform, false);
+                skill_trigger = go.AddComponent<SpiritSkillTrigger>();
+            }
 
-        protected virtual void Start() { if (Instance != this) return; }
-        public virtual void BindSpirit(Transform player, GameObject prefab) {
-            if (player==null) return; int id = player.GetInstanceID();
-            GameObject go = prefab != null ? Instantiate(prefab, player) : new GameObject("Spirit_"+player.name);
-            go.transform.SetParent(player, false); playerToSpirit[id] = go;
-            Debug.Log("[Spirit] 绑定: "+player.name);
+            // 连接事件
+            skill_trigger.skill_triggered += _on_skill_triggered;
+            skill_trigger.skill_effect_applied += _on_skill_effect_applied;
+            skill_trigger.skill_ui_feedback += _on_ui_feedback;
+
+            // 获取标签效果处理器引用
+            tag_effect_handler = FindObjectOfType<SpiritTagEffectHandler>();
+            if (tag_effect_handler == null && skill_trigger != null)
+            {
+                // 触发器会自动创建
+                tag_effect_handler = FindObjectOfType<SpiritTagEffectHandler>();
+            }
+
+            // 连接效果处理器事件
+            if (tag_effect_handler != null)
+            {
+                tag_effect_handler.effect_applied += _on_effect_applied_handler;
+                tag_effect_handler.effect_finished += _on_effect_finished_handler;
+            }
+
+            _initialized = true;
+            Debug.Log("[SpiritSystemManager] 初始化完成");
         }
-        public virtual GameObject GetSpirit(Transform p) { return p==null?null:(playerToSpirit.TryGetValue(p.GetInstanceID(), out var g)?g:null); }
-        public virtual float ElementMultiplier(string atk, string def) {
-            if (string.IsNullOrEmpty(atk) || string.IsNullOrEmpty(def)) return 1.0f;
-            string[] ring = {"fire","wood","earth","thunder","water"};
-            int ai = Array.IndexOf(ring, atk.ToLower()); int di = Array.IndexOf(ring, def.ToLower());
-            if (ai<0 || di<0) return 1.0f;
-            if ((ai+1)%ring.Length == di) return 1.25f;
-            if ((di+1)%ring.Length == ai) return 0.80f;
-            return 1.0f;
+
+        protected virtual void OnDestroy()
+        {
+            if (skill_trigger != null)
+            {
+                skill_trigger.skill_triggered -= _on_skill_triggered;
+                skill_trigger.skill_effect_applied -= _on_skill_effect_applied;
+                skill_trigger.skill_ui_feedback -= _on_ui_feedback;
+            }
+            if (tag_effect_handler != null)
+            {
+                tag_effect_handler.effect_applied -= _on_effect_applied_handler;
+                tag_effect_handler.effect_finished -= _on_effect_finished_handler;
+            }
+            if (Instance == this) Instance = null;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AutoCreate()
+        {
+            if (Instance == null)
+            {
+                var go = new GameObject("SpiritSystemManager");
+                go.AddComponent<SpiritSystemManager>();
+            }
+        }
+
+        // ============================================================
+        // 初始化系统
+        // ============================================================
+        public virtual void initialize(BattleManager battleManager, List<PlayerController> players, Transform ballNode)
+        {
+            if (!_initialized)
+            {
+                Debug.LogError("[SpiritSystemManager] 系统未初始化");
+                return;
+            }
+            if (skill_trigger != null)
+                skill_trigger.setup_battle_refs(battleManager, players, ballNode);
+            Debug.Log("[SpiritSystemManager] 系统已连接战斗场景");
+        }
+
+        // ============================================================
+        // 玩家技能
+        // ============================================================
+        public virtual void set_player_skills(int playerId, List<string> skillIds)
+        {
+            if (skill_trigger != null)
+                skill_trigger.set_player_skills(playerId, skillIds);
+            Debug.Log("[SpiritSystemManager] 玩家" + playerId + "上场技能设置完成");
+        }
+
+        // ============================================================
+        // 使用技能（主入口）
+        // ============================================================
+        public virtual bool use_skill(int playerId, string skillId, Dictionary<string, object> targetData = null)
+        {
+            if (targetData == null) targetData = new Dictionary<string, object>();
+            Debug.Log("[SpiritSystemManager] 使用技能: player_id=" + playerId + ", skill_id=" + skillId);
+
+            bool success = false;
+            if (skill_trigger != null)
+                success = skill_trigger.trigger_skill(playerId, skillId, targetData);
+
+            skill_used?.Invoke(skillId, playerId, success);
+            return success;
+        }
+
+        // ============================================================
+        // 查询
+        // ============================================================
+        public virtual float get_skill_cooldown(int playerId, string skillId)
+        {
+            if (skill_trigger != null) return skill_trigger.get_skill_cooldown(playerId, skillId);
+            return 0f;
+        }
+
+        public virtual List<string> get_player_skills(int playerId)
+        {
+            if (skill_trigger != null) return skill_trigger.get_player_skills(playerId);
+            return new List<string>();
+        }
+
+        public virtual bool has_tag(string tagId)
+        {
+            if (skill_trigger != null) return skill_trigger.has_tag(tagId);
+            return false;
+        }
+
+        public virtual Dictionary<string, object> get_tag_data(string tagId)
+        {
+            if (skill_trigger != null) return skill_trigger.get_tag_data(tagId);
+            return new Dictionary<string, object>();
+        }
+
+        // ============================================================
+        // 事件回调
+        // ============================================================
+        protected virtual void _on_skill_triggered(string skillId, int casterId, Dictionary<string, object> targetData)
+        {
+            Debug.Log("[SpiritSystemManager] 技能已触发: " + skillId + ", 施法者: " + casterId);
+        }
+
+        protected virtual void _on_skill_effect_applied(string skillId, string tagId, Dictionary<string, object> effectResult)
+        {
+            Debug.Log("[SpiritSystemManager] 技能效果已应用: " + skillId + ", 标签: " + tagId);
+        }
+
+        protected virtual void _on_ui_feedback(string effectType, Dictionary<string, object> effectData)
+        {
+            ui_feedback?.Invoke(effectType, effectData);
+        }
+
+        protected virtual void _on_effect_applied_handler(string tagId, Dictionary<string, object> effectData)
+        {
+            effect_applied?.Invoke(tagId, effectData);
+        }
+
+        protected virtual void _on_effect_finished_handler(string tagId, Dictionary<string, object> effectData)
+        {
+            Debug.Log("[SpiritSystemManager] 效果已结束: " + tagId);
+            effect_finished?.Invoke(tagId, effectData);
         }
     }
-
 }

@@ -288,7 +288,6 @@ namespace BattleBall.Systems.Nutrition
         public virtual string GetActiveFoodId() { return ""; }
         public virtual Dictionary<string, object> GetTeamBonuses() { return new Dictionary<string, object>(); }
         public virtual bool ConsumeFood(string foodId) { return true; }
-    }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void AutoCreate()
@@ -299,4 +298,5 @@ namespace BattleBall.Systems.Nutrition
                 go.AddComponent<NutritionManager>();
             }
         }
+    }
 }

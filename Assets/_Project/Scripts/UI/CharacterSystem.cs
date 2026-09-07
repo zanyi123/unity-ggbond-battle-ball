@@ -56,6 +56,7 @@ namespace BattleBall.UI
         private const float PanelWidth = 1070.0f;
         private const float PanelHeight = 700.0f;
         private const float PanelVisibleHeight = 625.0f;
+        private const float PanelContentHeight = 700.0f;  // 滚动内容定高（容纳全部详情），不用 LayoutGroup 接管
 
         private const float ContentX = 370.0f;
         private const float NameY = 90.0f;
@@ -259,21 +260,17 @@ namespace BattleBall.UI
             srt.sizeDelta = new Vector2(PanelWidth, PanelVisibleHeight);
             scrollGo.GetComponent<Image>().color = new Color(0, 0, 0, 0);
 
-            var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            // 关键：content 不能用 VerticalLayoutGroup / ContentSizeFitter，
+            // 否则会接管并重排所有子元素、覆盖它们的绝对定位 anchoredPosition，导致全部堆叠在左上角。
+            // 改为纯 RectTransform + 手动定高，让子元素的绝对定位全部生效并支持滚动。
+            var content = new GameObject("Content", typeof(RectTransform));
             var crt = content.GetComponent<RectTransform>();
             crt.SetParent(srt, false);
             crt.anchorMin = new Vector2(0, 1);
-            crt.anchorMax = Vector2.one;
+            crt.anchorMax = new Vector2(0, 1);
             crt.pivot = new Vector2(0.5f, 1);
-            crt.offsetMin = Vector2.zero;
-            crt.offsetMax = Vector2.zero;
-            var cvg = content.GetComponent<VerticalLayoutGroup>();
-            cvg.childControlWidth = true;
-            cvg.childControlHeight = true;
-            cvg.childForceExpandWidth = true;
-            cvg.childForceExpandHeight = false;
-            var csfc = content.GetComponent<ContentSizeFitter>();
-            csfc.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            crt.anchoredPosition = Vector2.zero;
+            crt.sizeDelta = new Vector2(PanelWidth, PanelContentHeight);
 
             var sr = scrollGo.GetComponent<ScrollRect>();
             sr.content = crt;

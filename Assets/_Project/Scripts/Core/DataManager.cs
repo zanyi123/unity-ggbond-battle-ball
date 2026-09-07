@@ -10,6 +10,7 @@ namespace BattleBall.Core
     /// 全局数据管理器（单例）。
     /// 使用 Newtonsoft.Json 从 Resources/data/ 加载所有 JSON 配置到内存。
     /// </summary>
+    [DefaultExecutionOrder(-300)]
     public class DataManager : MonoBehaviour
     {
         public static DataManager Instance { get; private set; }
@@ -118,6 +119,12 @@ namespace BattleBall.Core
         public List<Dictionary<string, object>> GetAllSkills()
         {
             return _skills ?? new List<Dictionary<string, object>>();
+        }
+
+        /// <summary>元灵技能全集(spirits/skills.json，如 skill_金刚_1)。与 GetAllSkills()(skills/skills.json) 是两套数据。</summary>
+        public List<Dictionary<string, object>> GetAllSpiritSkills()
+        {
+            return _spiritSkills ?? new List<Dictionary<string, object>>();
         }
 
         public Dictionary<string, object> GetSkillById(string id)

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using BattleBall.Core;
-using PlayerSaveManager = BattleBall.Systems.PlayerSaveManager;
+using PlayerSaveManager = BattleBall.Core.PlayerSaveManager;
 using BattleBall.Systems;                      // PlayerSaveManager
 using BattleBall.Systems.Inventory;          // InventoryManager
 using BattleBall.Systems.Training;           // TrainingManager
@@ -350,7 +350,7 @@ namespace BattleBall.UI
             NewLabel("Desc", Vector2.zero, new Vector2(300, 20), "背包装备列表，点击查看详情", 14, new Color(0.5f, 0.5f, 0.6f), content.transform);
 
             var scroll = NewScrollView("Scroll", content.transform);
-            var grid = NewGridLayout("Grid", 4, scroll.transform);
+            var grid = NewGridLayout("Grid", 4, scroll.GetComponent<ScrollRect>().content);
 
             List<Dictionary<string, object>> equipList = new List<Dictionary<string, object>>();
             Dictionary<string, Dictionary<string, object>> testEquipDefs = new Dictionary<string, Dictionary<string, object>>();
@@ -735,7 +735,7 @@ namespace BattleBall.UI
             NewLabel("TeamBonus", Vector2.zero, new Vector2(500, 20), bonusText, 14, new Color(0.8f, 0.9f, 0.6f), content.transform);
 
             var scroll = NewScrollView("Scroll", content.transform);
-            var grid = NewGridLayout("Grid", 4, scroll.transform);
+            var grid = NewGridLayout("Grid", 4, scroll.GetComponent<ScrollRect>().content);
 
             List<Dictionary<string, object>> foodList = new List<Dictionary<string, object>>();
             Dictionary<string, Dictionary<string, object>> testFoodDefs = new Dictionary<string, Dictionary<string, object>>();
